@@ -10,6 +10,12 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.TabSheet;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
@@ -147,6 +153,15 @@ public class MainView extends VerticalLayout {
                     timeDiff.addColumn(DiffBetweenProblems::time).setHeader("Time Difference");
 
                     timeDiff.setItems(minTimes);
+
+//                for(DiffBetweenProblems diff : minTimes) {
+//                    add(new Label("Student " + diff.sid() + " (" + names.get(diff.sid()) + ")" + " - Time between submission " +
+//                            diff.a1() + " of problem " + diff.pid1() + " and submission " +
+//                            diff.a2() + " of problem " + diff.pid2() + " was " + diff.time() + " seconds"
+//                    ));
+////                    ArrayList<Label> labels = new ArrayList<>();
+////                    add(labels);
+//                }
                     div1.add(timeDiff);
                 }
                 else {
@@ -173,7 +188,6 @@ public class MainView extends VerticalLayout {
         add(problemSelector);
         add(selectAll);
         add(analyze);
-
     }
     class AnalyzeCallback implements Callback {
         NativeLabel label;
