@@ -5,21 +5,37 @@ import com.github.williamli0707.webpanda.api.RunestoneAPI;
 import com.github.williamli0707.webpanda.records.Attempt;
 import com.github.williamli0707.webpanda.records.Diff;
 import com.github.williamli0707.webpanda.records.DiffBetweenProblems;
+import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
+import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.sidenav.SideNav;
+import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.component.tabs.TabSheet;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Route("")
+@Uses(DrawerToggle.class)
+@Uses(SideNav.class)
+@Uses(SideNavItem.class)
+@Uses(Scroller.class)
+//@Uses(MainView.class)
+@Uses(HistoryView.class)
+@Uses(MainLayout.class)
+@PageTitle("Runestone Analyzer")
+@Route(value="analyze", layout = MainLayout.class)
+@RouteAlias(value="", layout = MainLayout.class)
 public class MainView extends VerticalLayout {
     private RunestoneAPI api;
     public MainView() {
@@ -40,6 +56,7 @@ public class MainView extends VerticalLayout {
         selectAll.setEnabled(false);
 
         Button analyze = new Button("Analyze");
+        analyze.setEnabled(false);
 
         NativeLabel status1Label = new NativeLabel("Getting data...");
         NativeLabel status1 = new NativeLabel("status");
@@ -130,15 +147,6 @@ public class MainView extends VerticalLayout {
                     timeDiff.addColumn(DiffBetweenProblems::time).setHeader("Time Difference");
 
                     timeDiff.setItems(minTimes);
-
-//                for(DiffBetweenProblems diff : minTimes) {
-//                    add(new Label("Student " + diff.sid() + " (" + names.get(diff.sid()) + ")" + " - Time between submission " +
-//                            diff.a1() + " of problem " + diff.pid1() + " and submission " +
-//                            diff.a2() + " of problem " + diff.pid2() + " was " + diff.time() + " seconds"
-//                    ));
-////                    ArrayList<Label> labels = new ArrayList<>();
-////                    add(labels);
-//                }
                     div1.add(timeDiff);
                 }
                 else {
@@ -165,9 +173,6 @@ public class MainView extends VerticalLayout {
         add(problemSelector);
         add(selectAll);
         add(analyze);
-//        add(status1Label, status1);
-//        add(status2Label, status2);
-//        add(status3Label, status3);
 
     }
     class AnalyzeCallback implements Callback {

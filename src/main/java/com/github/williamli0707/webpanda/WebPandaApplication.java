@@ -16,7 +16,7 @@ import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
  * and some desktop browsers.
  */
 @SpringBootApplication(exclude = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
-@Theme(value = "mytodo")
+@Theme(value = "my-app")
 @NpmPackage(value = "line-awesome", version = "1.3.0")
 @Push
 public class WebPandaApplication implements AppShellConfigurator {

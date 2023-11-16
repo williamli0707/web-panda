@@ -1,6 +1,6 @@
 package com.github.williamli0707.webpanda.db;
 
-import org.jetbrains.annotations.NotNull;
+//import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,7 +53,7 @@ public class CodescanTask implements Comparable<CodescanTask> {
     }
 
     @Override
-    public int compareTo(@NotNull CodescanTask o) {
+    public int compareTo(CodescanTask o) {
         return (int) (time - o.time);
     }
 
