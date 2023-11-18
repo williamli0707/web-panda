@@ -16,31 +16,19 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RunestoneAPI {
-    private final OkHttpClient client, noRedirectClient, client2;
-    private CustomCookieJar cookiejar;
-    static {
+    private static OkHttpClient client, noRedirectClient;
+    private static OkHttpClient client2;
+    private static CustomCookieJar cookiejar;
 
-//        System.out.println("follow redirects? " + client.followRedirects());
-//        cookiejar = new PersistentCookieJar(new SetCookieCache(), new SharedPrefsCookiePersistor());
-    }
-
-    private final static Hashtable<String, String> studentnamescache = new Hashtable<>();
-    private final static Hashtable<String, String[]> problemnamescache = new Hashtable<>();
-    private final static Hashtable<String, String> defaultcodetemplatecache = new Hashtable<>();
-    private String cookie;
-    private static final String loginURL = "https://runestone.academy/user/login?_next=/runestone/admin";
-    private static final String gradeURL = "https://runestone.academy/ns/assessment/gethist";
-
-    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    private static final Pattern pform = Pattern.compile("<input name=\"_formkey\" type=\"hidden\" value=\"(.*?)\" />"),
-                                 psessionid = Pattern.compile("session_id_runestone=(.*?);"),
-                                 pproblems = Pattern.compile("<script type=\"application/json\" id=\"getassignmentinfo\">([\\s\\S]*?)</script>");
-
-    public RunestoneAPI() {
+    private static void initClients() {
         cookiejar = new CustomCookieJar();
         client = new OkHttpClient.Builder()
                 .followRedirects(true)
@@ -53,16 +41,40 @@ public class RunestoneAPI {
         client2 = new OkHttpClient.Builder()
                 .followRedirects(true)
                 .build();
+    }
+    public static void reset() {
+        initClients();
         try {
             resetCookie();
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        System.out.println("Done initializing cookie: " + cookie);
-        //TODO fix login issue - session id finding doesn't work
         initNameCache();
         initProblemCache();
-//        System.out.println(studentnamescache);
+    }
+
+    private final static Hashtable<String, String> studentnamescache = new Hashtable<>();
+    private final static Hashtable<String, String[]> problemnamescache = new Hashtable<>();
+    private final static Hashtable<String, String> defaultcodetemplatecache = new Hashtable<>();
+    private static String cookie, access_token, session_id;
+    private static final String loginURL = "https://runestone.academy/user/login?_next=/runestone/admin";
+    private static final String gradeURL = "https://runestone.academy/ns/assessment/gethist";
+
+    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private static final Pattern pform = Pattern.compile("<input name=\"_formkey\" type=\"hidden\" value=\"(.*?)\" />"),
+                                 psessionid = Pattern.compile("session_id_runestone=(.*?);"),
+                                 pproblems = Pattern.compile("<script type=\"application/json\" id=\"getassignmentinfo\">([\\s\\S]*?)</script>"),
+                                 paccess_token = Pattern.compile("access_token=(.*?);");
+
+
+    static {
+        reset();
+//        System.out.println("follow redirects? " + client.followRedirects());
+//        cookiejar = new PersistentCookieJar(new SetCookieCache(), new SharedPrefsCookiePersistor());
+    }
+
+    public RunestoneAPI() {
+
     }
 
     public RunestoneAPI(String names) {
@@ -73,7 +85,7 @@ public class RunestoneAPI {
         }
     }
 
-    private void initProblemCache() {
+    private static void initProblemCache() {
         try {
             Response resp = client.newCall(new Request.Builder()
                     .url("https://runestone.academy/runestone/admin/grading")
@@ -101,7 +113,7 @@ public class RunestoneAPI {
         }
     }
 
-    private void initNameCache() {
+    private static void initNameCache() {
         Hashtable<String, String> newnames = new Hashtable<>();
 
         MediaType mediaType = MediaType.parse("text/plain");
@@ -151,7 +163,7 @@ public class RunestoneAPI {
         return problemnamescache;
     }
 
-    public void resetCookie() throws IOException {
+    public static void resetCookie() throws IOException {
         Response response = noRedirectClient.newCall(new Request.Builder()
                 .url(new URL("https://runestone.academy/"))
                 .get()
@@ -177,7 +189,7 @@ public class RunestoneAPI {
         cookie = "session_id_runestone=" + sessionID + "; " +
                 "session_id_admin=205.173.47.254-12e99be8-596a-48ec-b212-f66d61c5ebdd;" +
 //                "access_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ3bGkyMjMiLCJleHAiOjE3MDgzODI2ODB9.xKWZFNYVtTzYe-106qBtsFsKvWy8oUVXSx7gHxFlVSs; " +
-                "access_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ3bGkyMjMiLCJleHAiOjE3MDg4OTEyNTZ9.6_yRcDx1sbo48xHi5EQqwFzP3TWZeKOnj6IR-COfXgw;" +
+//                "access_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ3bGkyMjMiLCJleHAiOjE3MDg4OTEyNTZ9.6_yRcDx1sbo48xHi5EQqwFzP3TWZeKOnj6IR-COfXgw;" +
                 //TODO check if access token works on Feburary 19, 2024
                 "_gcl_au=1.1.1332442316.1694036375; __utmc=28105279; " +
                 "RS_info=\"{\\\"tz_offset\\\": 8.0}\"";
@@ -237,7 +249,18 @@ public class RunestoneAPI {
 
         response.close(); //closed
 
-        //TODO repeat first call and should get the access token
+        response = noRedirectClient.newCall(new Request.Builder()
+                .url("https://runestone.academy/")
+                .get().build()).execute();
+        match = paccess_token.matcher(Objects.requireNonNull(response.header("Set-Cookie")));
+        if(!match.find()) throw new IOException("Could not find access token");
+//        System.out.println(response.body().string());
+        cookie = "session_id_runestone=" + sessionID + "; " +
+                "session_id_admin=205.173.47.254-12e99be8-596a-48ec-b212-f66d61c5ebdd;" +
+                "access_token=" + match.group(1) + ";" +
+                "_gcl_au=1.1.1332442316.1694036375; __utmc=28105279; " +
+                "RS_info=\"{\\\"tz_offset\\\": 8.0}\"";
+        response.close();
     }
 
     public static String getName(String sid) {
@@ -561,53 +584,62 @@ public class RunestoneAPI {
         return ret;
     }
 
-    //n is num of problems to analyze
+
     public ArrayList<DiffBetweenProblems> minTimeDiff(HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data, int n, Callback callback) {
+        ExecutorService service = Executors.newFixedThreadPool(10);
         Hashtable<String, String> names = getNames();
-        int numStudents = 0;
+        AtomicInteger numStudents = new AtomicInteger();
         ArrayList<DiffBetweenProblems> smallest = new ArrayList<>();
         for(String name: names.keySet()) {
-            callback.call((int) (numStudents++ * 100.0 / names.size()), "Processing student " + name + " (" + names.get(name) + ")");
+            service.submit(() -> {
+                callback.call((int) (numStudents.getAndIncrement() * 100.0 / names.size()), "Processing student " + name + " (" + names.get(name) + ")");
 //            System.out.println("processing " + names.get(name));
-            Attempt[][] times = new Attempt[n][]; // times[problem][attempt]
-            String[] pids = new String[n];
-            int ind = 0;
-            for(String pid: data.get(name).keySet()) {
-                times[ind] = data.get(name).get(pid).toArray(new Attempt[0]);
-                pids[ind] = pid;
-                Arrays.sort(times[ind++]); // just in case it's not sorted
-            }
+                Attempt[][] times = new Attempt[n][]; // times[problem][attempt]
+                String[] pids = new String[n];
+                int ind = 0;
+                for(String pid: data.get(name).keySet()) {
+                    times[ind] = data.get(name).get(pid).toArray(new Attempt[0]);
+                    pids[ind] = pid;
+                    Arrays.sort(times[ind++]); // just in case it's not sorted
+                }
 //            System.out.println(Arrays.deepToString(times));
-            double min = 1e11;
-            DiffBetweenProblems minDiff = null;
+                double min = 1e11;
+                DiffBetweenProblems minDiff = null;
 //            String res = "Nothing found";
-            for(int i = 0;i < n;i++) {
-                for(int j = i + 1;j < n;j++) {
-                    //start from 1, so that we can compare with the previous attempt to eliminate small changes
-                    for(int a = 1;a < times[i].length;a++) {
-                        for(int b = 1;b < times[j].length;b++) {
-                            if(LevenshteinDistance.getDistance(times[i][a - 1].code(), times[i][a].code()) * 1.0 / times[i][a - 1].code().length() < 0.1) continue;
-                            double curr = Math.abs(times[i][a].timestamp() - times[j][b].timestamp()) / 1000.0;
-                            if(curr < min) { //TODO tunable
-                                min = curr;
-                                minDiff = new DiffBetweenProblems(name, pids[i], pids[j], a + 2, b + 2, min);
-                                //res = "Smallest time difference between submissions was for " +
-                                //                                        pids[i] + " Submission" + (a + 2) + " " +
-                                //                                        pids[j] + " Submission" + (b + 2) + " " +
-                                //                                        ", Time difference: " + String.format("%.1f", curr) + " seconds";
-                            }
+                for(int i = 0;i < n;i++) {
+                    for(int j = i + 1;j < n;j++) {
+                        //start from 1, so that we can compare with the previous attempt to eliminate small changes
+                        for(int a = 1;a < times[i].length;a++) {
+                            for(int b = 1;b < times[j].length;b++) {
+                                int distance = LevenshteinDistance.getDistance(times[i][a - 1].code(), times[i][a].code());
+                                if(distance * 1.0 / times[i][a - 1].code().length() < 0.1) continue;
+                                double curr = Math.abs(times[i][a].timestamp() - times[j][b].timestamp()) / 1000.0;
+                                if(curr < min) { //TODO tunable
+                                    min = curr;
+                                    minDiff = new DiffBetweenProblems(name, pids[i], pids[j], a + 2, b + 2, min, distance / min);
+                                    //res = "Smallest time difference between submissions was for " +
+                                    //                                        pids[i] + " Submission" + (a + 2) + " " +
+                                    //                                        pids[j] + " Submission" + (b + 2) + " " +
+                                    //                                        ", Time difference: " + String.format("%.1f", curr) + " seconds";
+                                }
 //                            min = Math.min(min, curr);
-                            // very good time complexity
+                                // very good time complexity
+                            }
                         }
                     }
                 }
-            }
-            if(minDiff != null) smallest.add(minDiff);
+                if(minDiff != null) smallest.add(minDiff);
 //            System.out.println(name + " " + names.get(name) + ": " + res);
+            });
         }
+        service.shutdown();
+        try {
+            service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {throw new RuntimeException(e);}
         return smallest;
     }
 
+    //n is num of problems to analyze
     public ArrayList<Diff> findLargeEdits(HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data, int n, Callback callback) {
         Hashtable<String, String> names = getNames();
         HashMap<String, ArrayList<Diff>> diffs = new HashMap<>(); //one entry for each problem, values are combined diffs from all students for that problem
@@ -635,16 +667,18 @@ public class RunestoneAPI {
             avg /= num;
             for(Diff i: diffs.get(pid)) ret += Math.pow(i.score() - avg, 2);
             double stdev = Math.sqrt(ret / (num - 1));
-//            System.out.println(diffs.get(pid));
-//            System.out.println("stdev: " + stdev + " avg: " + avg);
+            System.out.println(diffs.get(pid));
+            System.out.println("stdev: " + stdev + " avg: " + avg);
             for(Diff i: diffs.get(pid)) {
-//                System.out.print(i.score() + ", ");
+                System.out.print(i.score() + ", ");
                 if((i.score() - avg) / stdev >= 3) { //TODO tunable
                     suspicious.add(i);
                 }
             }
-//            System.out.println();
+            System.out.println();
         }
+//        for(Diff i: suspicious) System.out.print(i.score() + ", ");
+        System.out.println();
         return suspicious;
     }
 }

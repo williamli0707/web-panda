@@ -32,21 +32,17 @@ import com.vaadin.flow.router.RouteAlias;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Uses(DrawerToggle.class)
-@Uses(SideNav.class)
-@Uses(SideNavItem.class)
-@Uses(Scroller.class)
-//@Uses(MainView.class)
-@Uses(HistoryView.class)
-@Uses(MainLayout.class)
 @PageTitle("Runestone Analyzer")
 @Route(value="analyze", layout = MainLayout.class)
 @RouteAlias(value="", layout = MainLayout.class)
 public class MainView extends VerticalLayout {
     private RunestoneAPI api;
     public MainView() {
+//        System.out.println("start");
         api = new RunestoneAPI();
+//        System.out.println("initialized api");
         Hashtable<String, String[]> problemsets = api.getProblems();
+//        System.out.println("got problem sets");
 
         ComboBox<String> problemsetSelector = new ComboBox<>("Problem Set");
         problemsetSelector.setItems(problemsets.keySet());
@@ -73,6 +69,8 @@ public class MainView extends VerticalLayout {
 
         TabSheet results = new TabSheet();
         AtomicBoolean resultsShown = new AtomicBoolean(false);
+
+//        System.out.println("init ui");
 
         problemsetSelector.addValueChangeListener(e -> {
             String selected = e.getValue();
@@ -116,8 +114,9 @@ public class MainView extends VerticalLayout {
                 ArrayList<DiffBetweenProblems> minTimes = null;
                 if(selectedProblems.size() > 1) {
                     getUI().get().access(() -> add(status2Label, status2));
+                    long time = System.currentTimeMillis();
                     minTimes = currApi.minTimeDiff(data, selectedProblems.size(), callback2);
-                    System.out.println("done calculating min times");
+                    System.out.println("Done calculating min times - Execution time: " + (System.currentTimeMillis() - time) + "ms");
 
                     getUI().get().access(() -> {
                         remove(status2Label);
@@ -125,8 +124,9 @@ public class MainView extends VerticalLayout {
                     });
                 }
                 getUI().get().access(() -> add(status3Label, status3));
+                long time = System.currentTimeMillis();
                 ArrayList<Diff> largeEdits = currApi.findLargeEdits(data, selectedProblems.size(), callback3);
-                System.out.println("done getting large edits");
+                System.out.println("Done getting large edits - Execution time: " + (System.currentTimeMillis() - time) + "ms");
                 System.out.println(largeEdits);
 
                 getUI().get().access(() -> {
@@ -141,17 +141,19 @@ public class MainView extends VerticalLayout {
                 results.setWidth("100%");
 
                 if(selectedProblems.size() > 1) {
-                    minTimes.sort(Comparator.comparingDouble(DiffBetweenProblems::time));
+//                    minTimes.sort(Comparator.comparingDouble(DiffBetweenProblems::time));
 
                     div1.add(new NativeLabel("Minimum time differences for each student: "));
                     Grid<DiffBetweenProblems> timeDiff = new Grid<>(DiffBetweenProblems.class, false);
                     timeDiff.setWidth("100%");
-                    timeDiff.addColumn(DiffBetweenProblems::sid).setHeader("ID");
-                    timeDiff.addColumn(a -> names.get(a.sid())).setHeader("Name");
+                    timeDiff.addColumn(DiffBetweenProblems::sid).setHeader("ID").setSortable(true);
+                    timeDiff.addColumn(a -> names.get(a.sid())).setHeader("Name").setSortable(true);
                     timeDiff.addColumn(a -> a.pid1() + " submission " + a.a1()).setHeader("Submission for Problem 1");
-                    timeDiff.addColumn(a -> a.pid2() + " submission " + a.a2()).setHeader("Submission for Problem 1");
-                    timeDiff.addColumn(DiffBetweenProblems::time).setHeader("Time Difference");
+                    timeDiff.addColumn(a -> a.pid2() + " submission " + a.a2()).setHeader("Submission for Problem 2");
+                    timeDiff.addColumn(DiffBetweenProblems::time).setHeader("Time Difference").setSortable(true);
+                    timeDiff.addColumn(a -> String.format("%.2f", a.score())).setHeader("Score").setSortable(true);
 
+                    timeDiff.setMultiSort(true, Grid.MultiSortPriority.APPEND);
                     timeDiff.setItems(minTimes);
 
 //                for(DiffBetweenProblems diff : minTimes) {
@@ -167,15 +169,17 @@ public class MainView extends VerticalLayout {
                 else {
                     div1.add(new NativeLabel("Skipped because only one problem was selected"));
                 }
-                largeEdits.sort(Comparator.comparingDouble(Diff::score).reversed());
+//                largeEdits.sort(Comparator.comparingDouble(Diff::score).reversed());
+//                largeEdits.sort(Comparator.comparingDouble(Diff::score));
 
                 Grid<Diff> edits = new Grid<>(Diff.class, false);
                 edits.setWidth("100%");
-                edits.addColumn(Diff::sid).setHeader("ID");
-                edits.addColumn(a -> names.get(a.sid())).setHeader("Name");
+                edits.addColumn(Diff::sid).setHeader("ID").setSortable(true);
+                edits.addColumn(a -> names.get(a.sid())).setHeader("Name").setSortable(true);
                 edits.addColumn(a -> a.pid() + " submission " + a.num()).setHeader("Submission");
-                edits.addColumn(Diff::score).setHeader("Difference");
+                edits.addColumn(Diff::score).setHeader("Difference").setSortable(true);
 
+                edits.setMultiSort(true, Grid.MultiSortPriority.APPEND);
                 edits.setItems(largeEdits);
 
                 div2.add(edits);
@@ -184,10 +188,13 @@ public class MainView extends VerticalLayout {
             }).start();
         });
 
+//        System.out.println("event listeners");
+
         add(problemsetSelector);
         add(problemSelector);
         add(selectAll);
         add(analyze);
+        System.out.println("done");
     }
     class AnalyzeCallback implements Callback {
         NativeLabel label;

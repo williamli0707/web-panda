@@ -37,7 +37,7 @@ public class MainLayout extends AppLayout {
     private void addDrawerContent() {
         H1 appName = new H1("Web-PANDA");
         Image icon = new Image("images/web-panda.png", "web panda");
-        icon.setWidth("100%");
+        icon.setWidth("250px");
         appName.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
         Header header = new Header(appName);
 
@@ -51,7 +51,8 @@ public class MainLayout extends AppLayout {
 
         nav.addItem(new SideNavItem("Analyzer", MainView.class/*, LineAwesomeIcon.GLOBE_SOLID.create()*/));
         nav.addItem(new SideNavItem("History", HistoryView.class/*, LineAwesomeIcon.FILE.create()*/));
-        LineAwesomeIcon.ACCESSIBLE_ICON.create();
+        nav.addItem(new SideNavItem("Settings", SettingsView.class/*, LineAwesomeIcon.FILE.create()*/));
+        nav.addItem(new SideNavItem("Test", TestView.class/*, LineAwesomeIcon.FILE.create()*/));
         return nav;
     }
 
