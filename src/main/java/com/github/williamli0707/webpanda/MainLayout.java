@@ -52,7 +52,6 @@ public class MainLayout extends AppLayout {
         nav.addItem(new SideNavItem("Analyzer", MainView.class/*, LineAwesomeIcon.GLOBE_SOLID.create()*/));
         nav.addItem(new SideNavItem("History", HistoryView.class/*, LineAwesomeIcon.FILE.create()*/));
         nav.addItem(new SideNavItem("Settings", SettingsView.class/*, LineAwesomeIcon.FILE.create()*/));
-        nav.addItem(new SideNavItem("Test", TestView.class/*, LineAwesomeIcon.FILE.create()*/));
         return nav;
     }
 
