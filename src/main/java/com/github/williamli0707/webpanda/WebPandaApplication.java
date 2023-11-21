@@ -33,9 +33,8 @@ public class WebPandaApplication implements AppShellConfigurator {
 			while(true) {
 				try {
 					Thread.sleep(1000*60*60);
-					RunestoneAPI.resetCookie();
-				} catch (InterruptedException ignored) {
-				} catch (IOException e) {
+					RunestoneAPI.reset();
+				} catch (InterruptedException e) {
 					throw new RuntimeException(e);
 				}
 			}

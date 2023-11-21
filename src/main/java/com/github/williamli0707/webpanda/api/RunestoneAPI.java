@@ -611,19 +611,24 @@ public class RunestoneAPI {
                         //start from 1, so that we can compare with the previous attempt to eliminate small changes
                         for(int a = 1;a < times[i].length;a++) {
                             for(int b = 1;b < times[j].length;b++) {
-                                int distance = LevenshteinDistance.getDistance(times[i][a - 1].code(), times[i][a].code());
-                                if(distance * 1.0 / times[i][a - 1].code().length() < 0.1) continue;
-                                double curr = Math.abs(times[i][a].timestamp() - times[j][b].timestamp()) / 1000.0;
-                                if(curr < min) { //TODO tunable
-                                    min = curr;
-                                    minDiff = new DiffBetweenProblems(name, pids[i], pids[j], a + 2, b + 2, min, distance / min);
-                                    //res = "Smallest time difference between submissions was for " +
-                                    //                                        pids[i] + " Submission" + (a + 2) + " " +
-                                    //                                        pids[j] + " Submission" + (b + 2) + " " +
-                                    //                                        ", Time difference: " + String.format("%.1f", curr) + " seconds";
-                                }
-//                            min = Math.min(min, curr);
-                                // very good time complexity
+//                                if(times[i][a].timestamp() < times[j][b].timestamp()) {
+//                                    int distance = LevenshteinDistance.getDistance(times[i][b - 1].code(), times[i][b].code());
+//                                    if (distance * 1.0 / times[i][b - 1].code().length() < 0.1) continue;
+//                                    double curr = Math.abs(times[i][a].timestamp() - times[j][b].timestamp()) / 1000.0;
+//                                    if (curr < min) { //TODO tunable
+//                                        min = curr;
+//                                        minDiff = new DiffBetweenProblems(name, pids[i], pids[j], a + 2, b + 2, min, distance / min);
+//                                    }
+//                                }
+//                                else {
+                                    int distance = LevenshteinDistance.getDistance(times[i][a - 1].code(), times[i][a].code());
+                                    if (distance * 1.0 / times[i][a - 1].code().length() < 0.1) continue;
+                                    double curr = Math.abs(times[i][a].timestamp() - times[j][b].timestamp()) / 1000.0;
+                                    if (curr < min) { //TODO tunable
+                                        min = curr;
+                                        minDiff = new DiffBetweenProblems(name, pids[j], pids[i], b + 2, a + 2, min, distance / min);
+                                    }
+//                                }
                             }
                         }
                     }
@@ -650,7 +655,7 @@ public class RunestoneAPI {
                 if(!diffs.containsKey(pid)) diffs.put(pid, new ArrayList<>());
                 ArrayList<Attempt> attempts = data.get(sid).get(pid);
                 for(int i = 1;i < attempts.size();i++) {
-                    if(LevenshteinDistance.getDistance(attempts.get(i - 1).code(), attempts.get(i).code()) * 1.0f / attempts.get(i - 1).code().length() < 0.1) continue;
+                    if(LevenshteinDistance.getDistance(attempts.get(i - 1).code(), attempts.get(i).code()) * 1.0f / attempts.get(i - 1).code().length() < 0.3) continue; //TODO tunable
                     diffs.get(pid).add(new Diff(sid, pid, i + 2, LevenshteinDistance.getDistance(attempts.get(i - 1).code(), attempts.get(i).code())));
                 }
             }

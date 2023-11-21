@@ -5,6 +5,7 @@ import com.github.williamli0707.webpanda.api.RunestoneAPI;
 import com.github.williamli0707.webpanda.records.Attempt;
 import com.github.williamli0707.webpanda.records.Diff;
 import com.github.williamli0707.webpanda.records.DiffBetweenProblems;
+import com.github.williamli0707.webpanda.records.Problem;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -13,8 +14,11 @@ import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeLabel;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
+import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.grid.Grid;
@@ -32,10 +36,13 @@ import com.vaadin.flow.router.RouteAlias;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@PageTitle("Runestone Analyzer")
+//@Uses(TextArea.class)
+//@PageTitle("Runestone Analyzer")
 @Route(value="analyze", layout = MainLayout.class)
 @RouteAlias(value="", layout = MainLayout.class)
 public class MainView extends VerticalLayout {
+//    private HorizontalLayout layout = new HorizontalLayout();
+//    private TextArea codeArea = new TextArea();
     private RunestoneAPI api;
     public MainView() {
 //        System.out.println("start");
@@ -156,6 +163,10 @@ public class MainView extends VerticalLayout {
                     timeDiff.setMultiSort(true, Grid.MultiSortPriority.APPEND);
                     timeDiff.setItems(minTimes);
 
+                    timeDiff.setItemDetailsRenderer(new ComponentRenderer<DoubleProblemViewer, DiffBetweenProblems>(DoubleProblemViewer::new, (viewer, diff) -> {
+                        viewer.setCode(data.get(diff.sid()).get(diff.pid1()), diff.a1() - 2, data.get(diff.sid()).get(diff.pid2()), diff.a2() - 2);
+                    }));
+
 //                for(DiffBetweenProblems diff : minTimes) {
 //                    add(new Label("Student " + diff.sid() + " (" + names.get(diff.sid()) + ")" + " - Time between submission " +
 //                            diff.a1() + " of problem " + diff.pid1() + " and submission " +
@@ -182,6 +193,10 @@ public class MainView extends VerticalLayout {
                 edits.setMultiSort(true, Grid.MultiSortPriority.APPEND);
                 edits.setItems(largeEdits);
 
+                edits.setItemDetailsRenderer(new ComponentRenderer<ProblemViewer, Diff>(ProblemViewer::new, (viewer, diff) -> {
+                    viewer.setCode(data.get(diff.sid()).get(diff.pid()), diff.num() - 2);
+                }));
+
                 div2.add(edits);
 
                 getUI().get().access(() -> add(results));
@@ -196,6 +211,15 @@ public class MainView extends VerticalLayout {
         add(analyze);
         System.out.println("done");
     }
+
+//    private static ComponentRenderer<ProblemViewer, Diff> createProblemViewerRenderer() {
+//        return new ComponentRenderer<>(problem -> {
+//            ProblemViewer viewer = new ProblemViewer();
+//            viewer.setCode(problem.code());
+//            return viewer;
+//        });
+//    }
+
     class AnalyzeCallback implements Callback {
         NativeLabel label;
         public AnalyzeCallback (NativeLabel label) {
