@@ -608,6 +608,7 @@ public class RunestoneAPI {
 //            String res = "Nothing found";
                 for(int i = 0;i < n;i++) {
                     for(int j = 0;j < n;j++) {
+                        if(i == j) continue;
                         //start from 1, so that we can compare with the previous attempt to eliminate small changes
                         for(int a = 1;a < times[i].length;a++) {
                             for(int b = 1;b < times[j].length;b++) {

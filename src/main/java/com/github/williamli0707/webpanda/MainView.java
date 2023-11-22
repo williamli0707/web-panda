@@ -143,16 +143,20 @@ public class MainView extends VerticalLayout {
 
                 resultsShown.set(true);
                 Div div1 = new Div(), div2 = new Div();
+                div1.setHeight("100%");
+                div2.setHeight("100%");
                 results.add("Time Differences", div1);
                 results.add("Large Edits", div2);
                 results.setWidth("100%");
+                results.setHeight("100%");
 
                 if(selectedProblems.size() > 1) {
 //                    minTimes.sort(Comparator.comparingDouble(DiffBetweenProblems::time));
 
-                    div1.add(new NativeLabel("Minimum time differences for each student: "));
+//                    div1.add(new NativeLabel("Minimum time differences for each student: "));
                     Grid<DiffBetweenProblems> timeDiff = new Grid<>(DiffBetweenProblems.class, false);
                     timeDiff.setWidth("100%");
+                    timeDiff.setHeight("100%");
                     timeDiff.addColumn(DiffBetweenProblems::sid).setHeader("ID").setSortable(true);
                     timeDiff.addColumn(a -> names.get(a.sid())).setHeader("Name").setSortable(true);
                     timeDiff.addColumn(a -> a.pid1() + " submission " + a.a1()).setHeader("Submission for Problem 1");
@@ -185,6 +189,7 @@ public class MainView extends VerticalLayout {
 
                 Grid<Diff> edits = new Grid<>(Diff.class, false);
                 edits.setWidth("100%");
+                edits.setHeight("100%");
                 edits.addColumn(Diff::sid).setHeader("ID").setSortable(true);
                 edits.addColumn(a -> names.get(a.sid())).setHeader("Name").setSortable(true);
                 edits.addColumn(a -> a.pid() + " submission " + a.num()).setHeader("Submission");
@@ -209,7 +214,7 @@ public class MainView extends VerticalLayout {
         add(problemSelector);
         add(selectAll);
         add(analyze);
-        System.out.println("done");
+        setHeight("100%");
     }
 
 //    private static ComponentRenderer<ProblemViewer, Diff> createProblemViewerRenderer() {
