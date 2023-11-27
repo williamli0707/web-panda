@@ -586,7 +586,7 @@ public class RunestoneAPI {
 
 
     public ArrayList<DiffBetweenProblems> minTimeDiff(HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data, int n, Callback callback) {
-        ExecutorService service = Executors.newFixedThreadPool(10);
+        ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         Hashtable<String, String> names = getNames();
         AtomicInteger numStudents = new AtomicInteger();
         ArrayList<DiffBetweenProblems> smallest = new ArrayList<>();
