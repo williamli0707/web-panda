@@ -52,6 +52,8 @@ public class HistoryView extends VerticalLayout {
                 }
             });
         }
+        accordion.close();
+//        accordion.getOpenedPanel().ifPresent(panel -> panel.setOpened(false));
         add(accordion);
     }
 }
