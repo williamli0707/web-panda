@@ -1,7 +1,5 @@
 package com.github.williamli0707.webpanda.records;
 
-import com.github.williamli0707.webpanda.Colors;
-
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 
@@ -14,6 +12,6 @@ public record Attempt(long timestamp, String code, int index) implements Compara
 
     @Override
     public String toString() {
-        return Colors.ANSI_RED + "Attempt " + index + " (" + sdf.format(new Date(timestamp)) + "): \n" + Colors.ANSI_RESET + code + "\n";
+        return "Attempt " + index + " (" + sdf.format(new Date(timestamp)) + "): \n" + code + "\n";
     }
 }

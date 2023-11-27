@@ -2,6 +2,8 @@ package com.github.williamli0707.webpanda;
 
 import com.github.williamli0707.webpanda.api.Callback;
 import com.github.williamli0707.webpanda.api.RunestoneAPI;
+import com.github.williamli0707.webpanda.db.CodescanRecord;
+import com.github.williamli0707.webpanda.db.MongoManager;
 import com.github.williamli0707.webpanda.records.Attempt;
 import com.github.williamli0707.webpanda.records.Diff;
 import com.github.williamli0707.webpanda.records.DiffBetweenProblems;
@@ -32,6 +34,8 @@ import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,6 +49,7 @@ public class MainView extends VerticalLayout {
 //    private TextArea codeArea = new TextArea();
     private RunestoneAPI api;
     public MainView() {
+//        System.out.println(this.getClass().getPackage().getImplementationVersion());
 //        System.out.println("start");
         api = new RunestoneAPI();
 //        System.out.println("initialized api");
@@ -74,7 +79,7 @@ public class MainView extends VerticalLayout {
         NativeLabel status3Label = new NativeLabel("Getting large edits...");
         NativeLabel status3 = new NativeLabel("status3");
 
-        TabSheet results = new TabSheet();
+        CodeView results = new CodeView(api.getNames());
         AtomicBoolean resultsShown = new AtomicBoolean(false);
 
 //        System.out.println("init ui");
@@ -103,14 +108,22 @@ public class MainView extends VerticalLayout {
 
         analyze.addClickListener(e -> {
             new Thread(() -> {
+                CodescanRecord record = new CodescanRecord();
                 Set<String> selectedProblems = problemSelector.getValue();
-                if(resultsShown.get()) remove(results);
+                record.setPids(selectedProblems.toArray(new String[0]));
+                if(resultsShown.get()) {
+                    getUI().get().access(() -> {
+                        remove(results);
+                    });
+                }
                 //create a new api in case the cookie is expired
                 RunestoneAPI currApi = new RunestoneAPI();
                 Hashtable<String, String> names = currApi.getNames();
                 getUI().get().access(() -> add(status1Label, status1));
                 Callback callback1 = new AnalyzeCallback(status1), callback2 = new AnalyzeCallback(status2), callback3 = new AnalyzeCallback(status3);
                 HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data = currApi.getAllCodeMultiple(callback1, selectedProblems);
+                record.setData(data);
+
                 System.out.println("done getting data");
 
                 getUI().get().access(() -> {
@@ -129,10 +142,12 @@ public class MainView extends VerticalLayout {
                         remove(status2Label);
                         remove(status2);
                     });
+                    record.setTimeDiffs(minTimes);
                 }
                 getUI().get().access(() -> add(status3Label, status3));
                 long time = System.currentTimeMillis();
                 ArrayList<Diff> largeEdits = currApi.findLargeEdits(data, selectedProblems.size(), callback3);
+                record.setLargeDiffs(largeEdits);
                 System.out.println("Done getting large edits - Execution time: " + (System.currentTimeMillis() - time) + "ms");
                 System.out.println(largeEdits);
 
@@ -140,71 +155,11 @@ public class MainView extends VerticalLayout {
                     remove(status3Label);
                     remove(status3);
                 });
-
                 resultsShown.set(true);
-                Div div1 = new Div(), div2 = new Div();
-                div1.setHeight("100%");
-                div2.setHeight("100%");
-                results.add("Time Differences", div1);
-                results.add("Large Edits", div2);
-                results.setWidth("100%");
-                results.setHeight("100%");
 
-                if(selectedProblems.size() > 1) {
-//                    minTimes.sort(Comparator.comparingDouble(DiffBetweenProblems::time));
-
-//                    div1.add(new NativeLabel("Minimum time differences for each student: "));
-                    Grid<DiffBetweenProblems> timeDiff = new Grid<>(DiffBetweenProblems.class, false);
-                    timeDiff.setWidth("100%");
-                    timeDiff.setHeight("100%");
-                    timeDiff.addColumn(DiffBetweenProblems::sid).setHeader("ID").setSortable(true);
-                    timeDiff.addColumn(a -> names.get(a.sid())).setHeader("Name").setSortable(true);
-                    timeDiff.addColumn(a -> a.pid1() + " submission " + a.a1()).setHeader("Submission for Problem 1");
-                    timeDiff.addColumn(a -> a.pid2() + " submission " + a.a2()).setHeader("Submission for Problem 2");
-                    timeDiff.addColumn(DiffBetweenProblems::time).setHeader("Time Difference").setSortable(true);
-                    timeDiff.addColumn(a -> String.format("%.2f", a.score())).setHeader("Score").setSortable(true);
-
-                    timeDiff.setMultiSort(true, Grid.MultiSortPriority.APPEND);
-                    timeDiff.setItems(minTimes);
-
-                    timeDiff.setItemDetailsRenderer(new ComponentRenderer<DoubleProblemViewer, DiffBetweenProblems>(DoubleProblemViewer::new, (viewer, diff) -> {
-                        viewer.setCode(data.get(diff.sid()).get(diff.pid1()), diff.a1() - 2, data.get(diff.sid()).get(diff.pid2()), diff.a2() - 2);
-                    }));
-
-//                for(DiffBetweenProblems diff : minTimes) {
-//                    add(new Label("Student " + diff.sid() + " (" + names.get(diff.sid()) + ")" + " - Time between submission " +
-//                            diff.a1() + " of problem " + diff.pid1() + " and submission " +
-//                            diff.a2() + " of problem " + diff.pid2() + " was " + diff.time() + " seconds"
-//                    ));
-////                    ArrayList<Label> labels = new ArrayList<>();
-////                    add(labels);
-//                }
-                    div1.add(timeDiff);
-                }
-                else {
-                    div1.add(new NativeLabel("Skipped because only one problem was selected"));
-                }
-//                largeEdits.sort(Comparator.comparingDouble(Diff::score).reversed());
-//                largeEdits.sort(Comparator.comparingDouble(Diff::score));
-
-                Grid<Diff> edits = new Grid<>(Diff.class, false);
-                edits.setWidth("100%");
-                edits.setHeight("100%");
-                edits.addColumn(Diff::sid).setHeader("ID").setSortable(true);
-                edits.addColumn(a -> names.get(a.sid())).setHeader("Name").setSortable(true);
-                edits.addColumn(a -> a.pid() + " submission " + a.num()).setHeader("Submission");
-                edits.addColumn(Diff::score).setHeader("Difference").setSortable(true);
-
-                edits.setMultiSort(true, Grid.MultiSortPriority.APPEND);
-                edits.setItems(largeEdits);
-
-                edits.setItemDetailsRenderer(new ComponentRenderer<ProblemViewer, Diff>(ProblemViewer::new, (viewer, diff) -> {
-                    viewer.setCode(data.get(diff.sid()).get(diff.pid()), diff.num() - 2);
-                }));
-
-                div2.add(edits);
-
+                getUI().get().access(() -> results.set(record));
                 getUI().get().access(() -> add(results));
+                MongoManager.save(record);
             }).start();
         });
 

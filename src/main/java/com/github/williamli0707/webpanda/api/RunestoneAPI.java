@@ -444,12 +444,12 @@ public class RunestoneAPI {
                 prev = attempt;
             }
             if(num == 1) {
-                System.out.println("N/A - one submission");
+//                System.out.println("N/A - one submission");
                 continue;
             }
             sum /= (num - 1);
-            System.out.printf("Average edit distance per second: %.5f \n", sum);
-            System.out.printf("Maximum edit distance per second: %.5f \n", max);
+//            System.out.printf("Average edit distance per second: %.5f \n", sum);
+//            System.out.printf("Maximum edit distance per second: %.5f \n", max);
             scores.put(key, new double[]{sum, max});
         }
         return scores;
@@ -465,9 +465,9 @@ public class RunestoneAPI {
         HashMap<String, ArrayList<Double>> scores = new HashMap<>();
         for (String key : names.keySet()) scores.put(key, new ArrayList<>());
         for(String i: pids) {
-            System.out.println("Problem: " + i);
+//            System.out.println("Problem: " + i);
             for (String key : names.keySet()) {
-            System.out.println(names.get(key) + " (" + key + ")");
+//            System.out.println(names.get(key) + " (" + key + ")");
                 LinkedList<Attempt> history = requestHistory(key, i);
 //            System.out.println(history);
                 double min = 0, max = 0, sum = 0, num = 0;
@@ -488,7 +488,7 @@ public class RunestoneAPI {
                     scores.get(key).add(diff);
                 }
                 if(num == 1) {
-                    System.out.println("\tN/A - one submission");
+//                    System.out.println("\tN/A - one submission");
                     continue;
                 }
             }
@@ -501,9 +501,9 @@ public class RunestoneAPI {
         HashMap<String, ArrayList<Double>> scores = new HashMap<>();
         for (String key : names.keySet()) scores.put(key, new ArrayList<>());
         for(String i: pids) {
-            System.out.println("Problem: " + i);
+//            System.out.println("Problem: " + i);
             for (String key : names.keySet()) {
-                System.out.println(names.get(key) + " (" + key + ")");
+//                System.out.println(names.get(key) + " (" + key + ")");
                 LinkedList<Attempt> history = requestHistory(key, i);
 //            System.out.println(history);
                 double min = 0, max = 0, sum = 0, num = 0;
@@ -524,7 +524,7 @@ public class RunestoneAPI {
                     scores.get(key).add(diff);
                 }
                 if(num == 1) {
-                    System.out.println("\tN/A - one submission");
+//                    System.out.println("\tN/A - one submission");
                     continue;
                 }
             }
@@ -664,18 +664,18 @@ public class RunestoneAPI {
             avg /= num;
             for(Diff i: diffs.get(pid)) ret += Math.pow(i.score() - avg, 2);
             double stdev = Math.sqrt(ret / (num - 1));
-            System.out.println(diffs.get(pid));
-            System.out.println("stdev: " + stdev + " avg: " + avg);
+//            System.out.println(diffs.get(pid));
+//            System.out.println("stdev: " + stdev + " avg: " + avg);
             for(Diff i: diffs.get(pid)) {
-                System.out.print(i.score() + ", ");
+//                System.out.print(i.score() + ", ");
                 if((i.score() - avg) / stdev >= 3) { //TODO tunable
                     suspicious.add(i);
                 }
             }
-            System.out.println();
+//            System.out.println();
         }
 //        for(Diff i: suspicious) System.out.print(i.score() + ", ");
-        System.out.println();
+//        System.out.println();
         return suspicious;
     }
 }
