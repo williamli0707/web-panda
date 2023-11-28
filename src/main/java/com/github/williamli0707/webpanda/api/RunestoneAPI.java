@@ -4,7 +4,6 @@ import com.github.sisyphsu.dateparser.DateParserUtils;
 import com.github.williamli0707.webpanda.records.Attempt;
 import com.github.williamli0707.webpanda.records.Diff;
 import com.github.williamli0707.webpanda.records.DiffBetweenProblems;
-import com.helger.commons.csv.CSVWriter;
 import com.helger.commons.string.util.LevenshteinDistance;
 import okhttp3.*;
 import org.json.JSONArray;
@@ -69,20 +68,6 @@ public class RunestoneAPI {
 
     static {
         reset();
-//        System.out.println("follow redirects? " + client.followRedirects());
-//        cookiejar = new PersistentCookieJar(new SetCookieCache(), new SharedPrefsCookiePersistor());
-    }
-
-    public RunestoneAPI() {
-
-    }
-
-    public RunestoneAPI(String names) {
-        this();
-        JSONObject respjson = new JSONObject(names);
-        for (Map.Entry<String, Object> entry : respjson.toMap().entrySet()) {
-            studentnamescache.putIfAbsent(entry.getKey(), (String) entry.getValue());
-        }
     }
 
     private static void initProblemCache() {
@@ -105,9 +90,7 @@ public class RunestoneAPI {
                     if(probname.endsWith("+")) probname = probname.substring(0, probname.length() - 1);
                     problemnamescache.get(set)[ind++] = probname;
                 }
-//                System.out.println(Arrays.toString(problemnamescache.get(set)));
             }
-//            System.out.println(problemnamescache);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -168,7 +151,6 @@ public class RunestoneAPI {
                 .url(new URL("https://runestone.academy/"))
                 .get()
                 .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-//                .addHeader("Accept-Encoding", "gzip, deflate, br")
                 .addHeader("Accept-Language", "en-US,en;q=0.5")
                 .addHeader("Connection", "keep-alive")
                 .addHeader("Host", "runestone.academy")
@@ -188,9 +170,6 @@ public class RunestoneAPI {
 
         cookie = "session_id_runestone=" + sessionID + "; " +
                 "session_id_admin=205.173.47.254-12e99be8-596a-48ec-b212-f66d61c5ebdd;" +
-//                "access_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ3bGkyMjMiLCJleHAiOjE3MDgzODI2ODB9.xKWZFNYVtTzYe-106qBtsFsKvWy8oUVXSx7gHxFlVSs; " +
-//                "access_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ3bGkyMjMiLCJleHAiOjE3MDg4OTEyNTZ9.6_yRcDx1sbo48xHi5EQqwFzP3TWZeKOnj6IR-COfXgw;" +
-                //TODO check if access token works on Feburary 19, 2024
                 "_gcl_au=1.1.1332442316.1694036375; __utmc=28105279; " +
                 "RS_info=\"{\\\"tz_offset\\\": 8.0}\"";
 
@@ -198,7 +177,6 @@ public class RunestoneAPI {
                 .url(loginURL)
                 .get()
                 .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-//                .addHeader("Accept-Encoding", "gzip, deflate, br")
                 .addHeader("Accept-Language", "en-US,en;q=0.5")
                 .addHeader("Connection", "keep-alive")
                 .addHeader("Host", "runestone.academy")
@@ -211,7 +189,6 @@ public class RunestoneAPI {
                 .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0")
                 .build()
         ).execute();
-//        System.out.println(response.body().string());
         match = pform.matcher(response.body().string()); //closed
         if(!match.find()) throw new IOException("Could not find form key");
         String formkey = match.group(1);
@@ -340,15 +317,6 @@ public class RunestoneAPI {
         }
         sortlist.sort(Attempt::compareTo);
 
-//        HashMap<Attempt, Integer> returnMap = new HashMap<>();
-//
-//        int index = 2; // lines up with runestone viewer
-//        for (Attempt a : sortlist) {
-////            returnMap.put(new Attempt(a.timestamp(), a.code(), index++), requestGrade(sid, pid));
-//            returnMap.put(new Attempt(a.timestamp(), a.code(), index++), 0);
-//        }
-//        return returnMap;
-
         LinkedList<Attempt> returnlist = new LinkedList<>();
 
         int index = 2; // lines up with runestone viewer
@@ -379,42 +347,6 @@ public class RunestoneAPI {
         }
     }
 
-    public void writeStudentData(String pid, String sid, String path) {
-        try {
-            CSVWriter writer = new CSVWriter(new FileWriter(path));
-            LinkedList<Attempt> l = requestHistory(sid, pid);
-            String[] r1 = new String[l.size()], r2 = new String[l.size()], r3 = new String[l.size()];
-            String prev = "";
-            int ind = 0;
-            for (Attempt i : l) {
-                r1[ind] = i.code();
-                r2[ind] = String.valueOf(i.timestamp());
-                r3[ind] = String.valueOf(LevenshteinDistance.getDistance(prev, i.code()));
-                ind++;
-                prev = i.code();
-            }
-            writer.writeNext(r1);
-            writer.writeNext(r2);
-            writer.writeNext(r3);
-            writer.close();
-        }
-        catch (Exception ignored) {}
-    }
-
-    //TODO
-    public void getStudentData(String pid, String sid) {
-        LinkedList<Attempt> l = requestHistory(sid, pid);
-        String[] r2 = new String[l.size()], r3 = new String[l.size()];
-        String prev = "";
-        int ind = 0;
-        for (Attempt i : l) {
-            r2[ind] = String.valueOf(i.timestamp());
-            r3[ind] = String.valueOf(LevenshteinDistance.getDistance(prev, i.code()));
-            ind++;
-            prev = i.code();
-        }
-    }
-
     /**
      * Returns the edit distance / second * 10000 metric for all students for a given problem.
      * @param pid the problem id of the problem to be analyzed
@@ -424,12 +356,9 @@ public class RunestoneAPI {
         Hashtable<String, String> names = getNames();
         HashMap<String, double[]> scores = new HashMap<>();
         for (String key : names.keySet()) {
-//            System.out.println(names.get(key) + " (" + key + ")");
             LinkedList<Attempt> history = requestHistory(key, pid);
-//            System.out.println(history);
             double min = 0, max = 0, sum = 0, num = 0;
             Attempt prev = null;
-//            System.out.println("num submissions: " + history.size());
             for (Attempt attempt : history) {
                 num++;
                 if(num == 1) {
@@ -437,19 +366,13 @@ public class RunestoneAPI {
                     continue;
                 }
                 double diff = 1000d * LevenshteinDistance.getDistance(prev.code(), attempt.code()) / (attempt.timestamp() - prev.timestamp());
-//                System.out.println("dist: " + LevenshteinDistance.getDistance(prev.code(), attempt.code()) + " time: " + (attempt.timestamp() - prev.timestamp()) + " diff: " + diff);
                 min = Math.min(min, diff);
                 max = Math.max(max, diff);
                 sum += diff;
                 prev = attempt;
             }
-            if(num == 1) {
-//                System.out.println("N/A - one submission");
-                continue;
-            }
+            if(num == 1) continue;
             sum /= (num - 1);
-//            System.out.printf("Average edit distance per second: %.5f \n", sum);
-//            System.out.printf("Maximum edit distance per second: %.5f \n", max);
             scores.put(key, new double[]{sum, max});
         }
         return scores;
@@ -465,14 +388,10 @@ public class RunestoneAPI {
         HashMap<String, ArrayList<Double>> scores = new HashMap<>();
         for (String key : names.keySet()) scores.put(key, new ArrayList<>());
         for(String i: pids) {
-//            System.out.println("Problem: " + i);
             for (String key : names.keySet()) {
-//            System.out.println(names.get(key) + " (" + key + ")");
                 LinkedList<Attempt> history = requestHistory(key, i);
-//            System.out.println(history);
                 double min = 0, max = 0, sum = 0, num = 0;
                 Attempt prev = null;
-//            System.out.println("num submissions: " + history.size());
                 for (Attempt attempt : history) {
                     num++;
                     if(num == 1) {
@@ -480,16 +399,11 @@ public class RunestoneAPI {
                         continue;
                     }
                     double diff = 1000d * LevenshteinDistance.getDistance(prev.code(), attempt.code()) / (attempt.timestamp() - prev.timestamp());
-//                System.out.println("dist: " + LevenshteinDistance.getDistance(prev.code(), attempt.code()) + " time: " + (attempt.timestamp() - prev.timestamp()) + " diff: " + diff);
                     min = Math.min(min, diff);
                     max = Math.max(max, diff);
                     sum += diff;
                     prev = attempt;
                     scores.get(key).add(diff);
-                }
-                if(num == 1) {
-//                    System.out.println("\tN/A - one submission");
-                    continue;
                 }
             }
         }
@@ -501,14 +415,10 @@ public class RunestoneAPI {
         HashMap<String, ArrayList<Double>> scores = new HashMap<>();
         for (String key : names.keySet()) scores.put(key, new ArrayList<>());
         for(String i: pids) {
-//            System.out.println("Problem: " + i);
             for (String key : names.keySet()) {
-//                System.out.println(names.get(key) + " (" + key + ")");
                 LinkedList<Attempt> history = requestHistory(key, i);
-//            System.out.println(history);
                 double min = 0, max = 0, sum = 0, num = 0;
                 Attempt prev = null;
-//            System.out.println("num submissions: " + history.size());
                 for (Attempt attempt : history) {
                     num++;
                     if(num == 1) {
@@ -516,16 +426,11 @@ public class RunestoneAPI {
                         continue;
                     }
                     double diff = LevenshteinDistance.getDistance(prev.code(), attempt.code());
-//                System.out.println("dist: " + LevenshteinDistance.getDistance(prev.code(), attempt.code()) + " time: " + (attempt.timestamp() - prev.timestamp()) + " diff: " + diff);
                     min = Math.min(min, diff);
                     max = Math.max(max, diff);
                     sum += diff;
                     prev = attempt;
                     scores.get(key).add(diff);
-                }
-                if(num == 1) {
-//                    System.out.println("\tN/A - one submission");
-                    continue;
                 }
             }
         }
@@ -536,7 +441,6 @@ public class RunestoneAPI {
         Hashtable<String, String> names = getNames();
         HashMap<String, LinkedList<Attempt>> ret = new HashMap<>();
         for (String key : names.keySet()) {
-//            System.out.println(names.get(key) + " (" + key + ")");
             ret.put(key, requestHistory(key, pid));
         }
         return ret;
@@ -548,7 +452,6 @@ public class RunestoneAPI {
         int numStudents = 0;
         for (String key : names.keySet()) {
             callback.call((int) (currPercent + (numStudents++ * 1.0 * (nextPercent - currPercent) / names.size())), "Getting data for problem " + pid);
-//            System.out.println(names.get(key) + " (" + key + ")");
             ret.put(key, requestHistory(key, pid));
         }
         return ret;
@@ -567,7 +470,6 @@ public class RunestoneAPI {
             int numStudents = 0;
             HashMap<String, LinkedList<Attempt>> hm = getAllCode(pid, callback, currPercent, nextPercent);
             for(String sid: hm.keySet()) {
-//                callback.call((int) (currPercent + (numStudents++ * 1.0 * (nextPercent - currPercent) / hm.size())), "Getting data for problem " + pid);
                 if(!ret.containsKey(sid)) {
                     ret.put(sid, new LinkedHashMap<>());
                 }
@@ -593,7 +495,6 @@ public class RunestoneAPI {
         for(String name: names.keySet()) {
             service.submit(() -> {
                 callback.call((int) (numStudents.getAndIncrement() * 100.0 / names.size()), "Processing student " + name + " (" + names.get(name) + ")");
-//            System.out.println("processing " + names.get(name));
                 Attempt[][] times = new Attempt[n][]; // times[problem][attempt]
                 String[] pids = new String[n];
                 int ind = 0;
@@ -602,10 +503,8 @@ public class RunestoneAPI {
                     pids[ind] = pid;
                     Arrays.sort(times[ind++]); // just in case it's not sorted
                 }
-//            System.out.println(Arrays.deepToString(times));
                 double min = 1e11;
                 DiffBetweenProblems minDiff = null;
-//            String res = "Nothing found";
                 for(int i = 0;i < n;i++) {
                     for(int j = 0;j < n;j++) {
                         if(i == j) continue;
@@ -626,7 +525,6 @@ public class RunestoneAPI {
                     }
                 }
                 if(minDiff != null) smallest.add(minDiff);
-//            System.out.println(name + " " + names.get(name) + ": " + res);
             });
         }
         service.shutdown();
@@ -656,7 +554,6 @@ public class RunestoneAPI {
         ind = 0;
         for(String pid: diffs.keySet()) {
             callback.call((int) (ind++ * 100.0 / n), "Processing problem " + pid);
-//            System.out.println(pid);
             diffs.get(pid).sort(Comparator.comparingDouble(Diff::score));
             int num = diffs.get(pid).size();
             double avg = 0, ret = 0;
@@ -664,18 +561,12 @@ public class RunestoneAPI {
             avg /= num;
             for(Diff i: diffs.get(pid)) ret += Math.pow(i.score() - avg, 2);
             double stdev = Math.sqrt(ret / (num - 1));
-//            System.out.println(diffs.get(pid));
-//            System.out.println("stdev: " + stdev + " avg: " + avg);
             for(Diff i: diffs.get(pid)) {
-//                System.out.print(i.score() + ", ");
                 if((i.score() - avg) / stdev >= 3) { //TODO tunable
                     suspicious.add(i);
                 }
             }
-//            System.out.println();
         }
-//        for(Diff i: suspicious) System.out.print(i.score() + ", ");
-//        System.out.println();
         return suspicious;
     }
 }

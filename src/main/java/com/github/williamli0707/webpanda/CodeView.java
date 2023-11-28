@@ -1,7 +1,6 @@
 package com.github.williamli0707.webpanda;
 
 import com.github.williamli0707.webpanda.db.CodescanRecord;
-import com.github.williamli0707.webpanda.records.Attempt;
 import com.github.williamli0707.webpanda.records.Diff;
 import com.github.williamli0707.webpanda.records.DiffBetweenProblems;
 import com.vaadin.flow.component.grid.Grid;
@@ -10,10 +9,7 @@ import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.LinkedHashMap;
 
 public class CodeView extends TabSheet {
     private Div div1, div2;

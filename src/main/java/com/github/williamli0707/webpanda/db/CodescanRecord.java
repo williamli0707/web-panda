@@ -6,14 +6,13 @@ import com.github.williamli0707.webpanda.records.Attempt;
 import com.github.williamli0707.webpanda.records.Diff;
 import com.github.williamli0707.webpanda.records.DiffBetweenProblems;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import org.bson.types.Code;
-import org.json.JSONObject;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 @Document("codescantasks")
 public class CodescanRecord implements Comparable<CodescanRecord> {
@@ -42,18 +41,6 @@ public class CodescanRecord implements Comparable<CodescanRecord> {
         this.pids = new String[0];
         data = new HashMap<>();
     }
-
-//    public CodescanTask(Document doc) {
-//        this.studentids = (ArrayList<String>) doc.get("students");
-//        Collections.sort(studentids);
-//
-//        this.problemids = (ArrayList<String>) doc.get("problems");
-//        Collections.sort(problemids);
-//
-//        this.time = doc.getLong("time");
-//        this.cookie = doc.getString("cookie");
-//        this.type = doc.getString("type");
-//    }
 
     public ArrayList<Diff> getLargeEdits() {
         return largeDiffs;
@@ -103,9 +90,6 @@ public class CodescanRecord implements Comparable<CodescanRecord> {
     public void setData(HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data) {
         this.data = data;
         dataString = gson.toJson(data);
-
-//        HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data2 = new Gson().fromJson(new Gson().toJson(data), HashMap.class);
-//        System.out.println(data2);
     }
 
     public void setData(String data) {
@@ -117,14 +101,6 @@ public class CodescanRecord implements Comparable<CodescanRecord> {
     public int compareTo(CodescanRecord o) {
         return (int) (Long.parseLong(o.id) - Long.parseLong(id));
     }
-
-//    public Document toDocument() {
-//        return new Document("time", time)
-//                .append("students", studentids)
-//                .append("problems", problemids)
-//                .append("cookie", cookie)
-//                .append("type", type);
-//    }
 
     @Override
     public String toString() {
