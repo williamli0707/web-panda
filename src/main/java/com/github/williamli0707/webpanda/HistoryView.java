@@ -5,15 +5,8 @@ import com.github.williamli0707.webpanda.db.CodescanRecord;
 import com.github.williamli0707.webpanda.db.MongoManager;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.accordion.AccordionPanel;
-import com.vaadin.flow.component.applayout.DrawerToggle;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dependency.Uses;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeLabel;
-import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.sidenav.SideNav;
-import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
@@ -53,11 +46,6 @@ public class HistoryView extends VerticalLayout {
             });
         }
         accordion.close();
-//        accordion.getOpenedPanel().ifPresent(panel -> panel.setOpened(false));
         add(accordion);
     }
 }
-
-/*
-List most (highest scoring?) students, show a difference between iterations and what was weird about it
- */
