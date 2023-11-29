@@ -1,17 +1,15 @@
-package com.github.williamli0707.webpanda;
+package com.github.williamli0707.webpanda.views;
 
+import com.github.williamli0707.webpanda.WebPandaApplication;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.html.*;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-import org.vaadin.lineawesome.LineAwesomeIcon;
 
 @Uses(MainView.class)
 public class MainLayout extends AppLayout {
@@ -57,6 +55,7 @@ public class MainLayout extends AppLayout {
 
     private Footer createFooter() {
         Footer layout = new Footer();
+        layout.add(new NativeLabel("Version " + WebPandaApplication.version));
 
         return layout;
     }

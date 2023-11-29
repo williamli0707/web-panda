@@ -1,4 +1,4 @@
-package com.github.williamli0707.webpanda;
+package com.github.williamli0707.webpanda.views;
 
 import com.github.williamli0707.webpanda.api.Callback;
 import com.github.williamli0707.webpanda.api.RunestoneAPI;

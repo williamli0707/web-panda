@@ -1,4 +1,4 @@
-package com.github.williamli0707.webpanda;
+package com.github.williamli0707.webpanda.views;
 
 import com.github.williamli0707.webpanda.records.Attempt;
 import com.vaadin.flow.component.button.Button;

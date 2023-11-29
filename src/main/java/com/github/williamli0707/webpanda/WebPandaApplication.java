@@ -1,7 +1,6 @@
 package com.github.williamli0707.webpanda;
 
 import com.github.williamli0707.webpanda.api.RunestoneAPI;
-import com.github.williamli0707.webpanda.db.CodescanRecord;
 import com.github.williamli0707.webpanda.db.ItemRepository;
 import com.github.williamli0707.webpanda.db.MongoManager;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -9,15 +8,13 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.theme.Theme;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
-import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.IOException;
 
 /**
  * The entry point of the Spring Boot application.
@@ -35,7 +32,12 @@ public class WebPandaApplication implements CommandLineRunner, AppShellConfigura
 	@Autowired
 	ItemRepository codescanRepo;
 
-	public static void main(String[] args) {
+	@Value("${build.version}")
+	private String tmp;
+	public static String version;
+
+	public static void main(String[] args) throws IOException {
+
 		SpringApplication.run(WebPandaApplication.class, args);
 
 		//Reset cookie every hour to prevent session from expiring
@@ -49,10 +51,11 @@ public class WebPandaApplication implements CommandLineRunner, AppShellConfigura
 				}
 			}
 		}).start();
+		//TODO scans might be broken during resetting, fix this later
 	}
 
 	public void run(String... args) {
-//		System.out.println("saving");
+		version = tmp;
 //		codescanRepo.deleteAll();
 		MongoManager.repository = codescanRepo;
 //		codescanRepo.save(new CodescanRecord(new ArrayList<>(), new ArrayList<>(), new String[] {"1", "2"}, new HashMap<>()));
