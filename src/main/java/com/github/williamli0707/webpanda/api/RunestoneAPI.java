@@ -410,42 +410,6 @@ public class RunestoneAPI {
         return scores;
     }
 
-    public HashMap<String, ArrayList<Double>> getMultipleProblemsND(String[] pids) {
-        Hashtable<String, String> names = getNames();
-        HashMap<String, ArrayList<Double>> scores = new HashMap<>();
-        for (String key : names.keySet()) scores.put(key, new ArrayList<>());
-        for(String i: pids) {
-            for (String key : names.keySet()) {
-                LinkedList<Attempt> history = requestHistory(key, i);
-                double min = 0, max = 0, sum = 0, num = 0;
-                Attempt prev = null;
-                for (Attempt attempt : history) {
-                    num++;
-                    if(num == 1) {
-                        prev = attempt;
-                        continue;
-                    }
-                    double diff = LevenshteinDistance.getDistance(prev.code(), attempt.code());
-                    min = Math.min(min, diff);
-                    max = Math.max(max, diff);
-                    sum += diff;
-                    prev = attempt;
-                    scores.get(key).add(diff);
-                }
-            }
-        }
-        return scores;
-    }
-
-    public HashMap<String, LinkedList<Attempt>> getAllCode(String pid) {
-        Hashtable<String, String> names = getNames();
-        HashMap<String, LinkedList<Attempt>> ret = new HashMap<>();
-        for (String key : names.keySet()) {
-            ret.put(key, requestHistory(key, pid));
-        }
-        return ret;
-    }
-
     public HashMap<String, LinkedList<Attempt>> getAllCode(String pid, Callback callback, int currPercent, int nextPercent) {
         Hashtable<String, String> names = getNames();
         HashMap<String, LinkedList<Attempt>> ret = new HashMap<>();
@@ -484,6 +448,46 @@ public class RunestoneAPI {
             }
         }
         return ret;
+    }
+
+    public ArrayList<DiffBetweenProblems> minTimeDiff2(HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data, int n) {
+        ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        Hashtable<String, String> names = getNames();
+        ArrayList<DiffBetweenProblems> smallest = new ArrayList<>();
+        for(String name: names.keySet()) {
+            service.submit(() -> {
+                Attempt[][] times = new Attempt[n][]; // times[problem][attempt]
+                String[] pids = new String[n];
+                int ind = 0;
+                for(String pid: data.get(name).keySet()) {
+                    times[ind] = data.get(name).get(pid).toArray(new Attempt[0]);
+                    pids[ind] = pid;
+                    Arrays.sort(times[ind++]); // just in case it's not sorted
+                }
+                for(int i = 0;i < n;i++) {
+                    for(int j = 0;j < n;j++) {
+                        if(i == j) continue;
+                        //start from 1, so that we can compare with the previous attempt to eliminate small changes
+                        for(int a = 1;a < times[i].length;a++) {
+                            for(int b = 1;b < times[j].length;b++) {
+                                if(times[i][a].timestamp() > times[j][b].timestamp()) {
+                                    int distance = LevenshteinDistance.getDistance(times[i][a - 1].code(), times[i][a].code());
+                                    if (distance * 1.0 / times[i][a - 1].code().length() < 0.1) continue;
+                                    double curr = Math.abs(times[i][a].timestamp() - times[j][b].timestamp()) / 1000.0;
+                                    smallest.add(new DiffBetweenProblems(name, pids[j], pids[i], b + 2, a + 2, curr, distance / curr));
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        service.shutdown();
+        try {
+            service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {throw new RuntimeException(e);}
+        return smallest;
+
     }
 
 

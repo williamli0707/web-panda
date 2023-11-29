@@ -34,7 +34,11 @@ public class MainLayout extends AppLayout {
 
     private void addDrawerContent() {
         H1 appName = new H1("Web-PANDA");
+//        Image icon = new Image("images/web-panda.png", "web panda");
         Image icon = new Image("images/web-panda.png", "web panda");
+//        File file = new File("src/main/resources/images/web-panda.png");
+//        Image icon = new Image(new StreamResource(file,
+//                () -> getClass().getClassLoader().getResourceAsStream("images/web-panda.png")), "web panda");
         icon.setWidth("250px");
         appName.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
         Header header = new Header(appName);
