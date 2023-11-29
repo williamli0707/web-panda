@@ -27,15 +27,17 @@ public class ProblemViewer extends VerticalLayout {
                 if(--currAttempt == 0) {
                     prev.setEnabled(false);
                 }
+                next.setEnabled(true);
                 codeArea.setValue(code.get(currAttempt).code());
                 submissionLabel.setText("Submission " + (currAttempt + 2) + " out of " + numAttempts);
             }
         });
         next.addClickListener(e -> {
-            if (currAttempt < numAttempts - 1) {
-                if(++currAttempt == numAttempts - 1) {
+            if (currAttempt < numAttempts - 2) {
+                if(++currAttempt == numAttempts - 2) {
                     next.setEnabled(false);
                 }
+                prev.setEnabled(true);
                 codeArea.setValue(code.get(currAttempt).code());
                 submissionLabel.setText("Submission " + (currAttempt + 2) + " out of " + numAttempts);
             }
