@@ -2,6 +2,7 @@ package com.github.williamli0707.webpanda.db;
 
 //import org.jetbrains.annotations.NotNull;
 
+import com.github.williamli0707.webpanda.WebPandaApplication;
 import com.github.williamli0707.webpanda.records.Attempt;
 import com.github.williamli0707.webpanda.records.Diff;
 import com.github.williamli0707.webpanda.records.DiffBetweenProblems;
@@ -24,6 +25,7 @@ public class CodescanRecord implements Comparable<CodescanRecord> {
     private ArrayList<DiffBetweenProblems> timeDiffs;
     private HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data;
     private String dataString;
+    private String version;
 
     public CodescanRecord(ArrayList<Diff> largeDiffs, ArrayList<DiffBetweenProblems> timeDiffs, String[] pids, HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data) {
         this.id = String.valueOf(System.currentTimeMillis());
@@ -32,6 +34,7 @@ public class CodescanRecord implements Comparable<CodescanRecord> {
         this.pids = pids;
         this.data = data;
         dataString = gson.toJson(data);
+        this.version = WebPandaApplication.version;
     }
 
     public CodescanRecord() {
@@ -40,6 +43,7 @@ public class CodescanRecord implements Comparable<CodescanRecord> {
         this.timeDiffs = new ArrayList<>();
         this.pids = new String[0];
         data = new HashMap<>();
+        this.version = WebPandaApplication.version;
     }
 
     public ArrayList<Diff> getLargeEdits() {
@@ -67,6 +71,14 @@ public class CodescanRecord implements Comparable<CodescanRecord> {
 
     public void setDataString(String dataString) {
         this.dataString = dataString;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public void setId(String id) {

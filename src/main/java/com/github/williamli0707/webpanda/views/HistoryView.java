@@ -1,4 +1,4 @@
-package com.github.williamli0707.webpanda;
+package com.github.williamli0707.webpanda.views;
 
 import com.github.williamli0707.webpanda.api.RunestoneAPI;
 import com.github.williamli0707.webpanda.db.CodescanRecord;
@@ -33,12 +33,20 @@ public class HistoryView extends VerticalLayout {
         accordion.setWidth("100%");
         for(CodescanRecord i: res) {
             VerticalLayout div = new VerticalLayout();
+            div.setSpacing(false);
+            div.setPadding(false);
             AccordionPanel panel = accordion.add("Scan on " + sdf.format(new Date(i.getTime())), div);
             panel.setOpened(false);
+
             div.add(new NativeLabel("Problems scanned: " + Arrays.toString(i.getPids())));
+
             CodeView view = new CodeView(api.getNames());
-            div.add(view);
             view.setHeight("500px");
+            div.add(view);
+
+            NativeLabel ver = new NativeLabel("Scanned on version " + i.getVersion());
+            ver.getStyle().set("margin", "0");
+            div.add(ver);
             panel.addOpenedChangeListener(e -> {
                 if(e.isOpened()) {
                     view.set(i);
