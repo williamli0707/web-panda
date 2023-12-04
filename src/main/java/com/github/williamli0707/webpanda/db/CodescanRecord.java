@@ -11,7 +11,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -112,15 +111,6 @@ public class CodescanRecord implements Comparable<CodescanRecord> {
     @Override
     public int compareTo(CodescanRecord o) {
         return (int) (Long.parseLong(o.id) - Long.parseLong(id));
-    }
-
-    @Override
-    public String toString() {
-        return "CodescanTask{" +
-                "problemids=" + Arrays.toString(pids) +
-                ", timediffs='" + (pids.length == 1 ? "N/A" : timeDiffs.toString()) + '\'' +
-                ", largediffs='" + largeDiffs.toString() + '\'' +
-                '}';
     }
 
     public long getTime() {

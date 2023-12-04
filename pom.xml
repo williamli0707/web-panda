@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.github.williamli0707</groupId>
     <artifactId>web-panda</artifactId>
-    <version>1.3.2-SNAPSHOT</version>
+    <version>1.3.2-SNAPSHOT-c1</version>
     <name>Web-PANDA</name>
     <description>Web-based Plagiarism ANalysis and Detection Algorithm</description>
     <packaging>jar</packaging>

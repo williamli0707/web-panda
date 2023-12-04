@@ -22,10 +22,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Route(value="analyze", layout = MainLayout.class)
 @RouteAlias(value="", layout = MainLayout.class)
 public class MainView extends VerticalLayout {
-    private RunestoneAPI api;
     public MainView() {
-        api = new RunestoneAPI();
-        Hashtable<String, String[]> problemsets = api.getProblems();
+        Hashtable<String, String[]> problemsets = RunestoneAPI.getProblems();
 
         ComboBox<String> problemsetSelector = new ComboBox<>("Problem Set");
         problemsetSelector.setItems(problemsets.keySet());
@@ -50,7 +48,7 @@ public class MainView extends VerticalLayout {
         NativeLabel status3Label = new NativeLabel("Getting large edits...");
         NativeLabel status3 = new NativeLabel("status3");
 
-        CodeView results = new CodeView(api.getNames());
+        CodeView results = new CodeView(RunestoneAPI.getNames());
         AtomicBoolean resultsShown = new AtomicBoolean(false);
 
 
@@ -87,13 +85,12 @@ public class MainView extends VerticalLayout {
                     });
                 }
                 //create a new api in case the cookie is expired
-                RunestoneAPI currApi = new RunestoneAPI();
-                Hashtable<String, String> names = currApi.getNames();
+//                RunestoneAPI currApi = new RunestoneAPI();
                 getUI().ifPresent(ui -> {
                     if(ui.isAttached()) ui.access(() -> add(status1Label, status1));
                 });
                 Callback callback1 = new AnalyzeCallback(status1), callback2 = new AnalyzeCallback(status2), callback3 = new AnalyzeCallback(status3);
-                HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data = currApi.getAllCodeMultiple(callback1, selectedProblems);
+                HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data = RunestoneAPI.getAllCodeMultiple(callback1, selectedProblems);
                 record.setData(data);
 
                 System.out.println("done getting data");
@@ -108,7 +105,8 @@ public class MainView extends VerticalLayout {
                         if(ui.isAttached()) ui.access(() -> add(status2Label, status2));
                     });
                     long time = System.currentTimeMillis();
-                    minTimes = currApi.minTimeDiff(data, selectedProblems.size(), callback2);
+//                    minTimes = currApi.minTimeDiff(data, selectedProblems.size(), callback2);
+                    minTimes = RunestoneAPI.minTimeDiff2(data, record.getPids(), callback2); //TODO change back
                     System.out.println("Done calculating min times - Execution time: " + (System.currentTimeMillis() - time) + "ms");
 
                     getUI().ifPresent(ui -> {
@@ -120,7 +118,7 @@ public class MainView extends VerticalLayout {
                     if(ui.isAttached()) ui.access(() -> add(status3Label, status3));
                 });
                 long time = System.currentTimeMillis();
-                ArrayList<Diff> largeEdits = currApi.findLargeEdits(data, selectedProblems.size(), callback3);
+                ArrayList<Diff> largeEdits = RunestoneAPI.findLargeEdits(data, selectedProblems.size(), callback3);
                 record.setLargeDiffs(largeEdits);
                 System.out.println("Done getting large edits - Execution time: " + (System.currentTimeMillis() - time) + "ms");
                 System.out.println(largeEdits);
