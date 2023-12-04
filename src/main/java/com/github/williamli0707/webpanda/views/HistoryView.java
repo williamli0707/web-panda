@@ -20,11 +20,9 @@ import java.util.List;
 @Route(value = "history", layout = MainLayout.class)
 public class HistoryView extends VerticalLayout {
     private static SimpleDateFormat sdf = new SimpleDateFormat("E MMMM d hh:mm:ss a z y");
-    private RunestoneAPI api;
     public HistoryView() {
         setHeight("100%");
         setWidth("100%");
-        api = new RunestoneAPI();
         System.out.println(MongoManager.repository.count());
         List<CodescanRecord> res = MongoManager.repository.findAll();
         Collections.sort(res);
@@ -40,7 +38,7 @@ public class HistoryView extends VerticalLayout {
 
             div.add(new NativeLabel("Problems scanned: " + Arrays.toString(i.getPids())));
 
-            CodeView view = new CodeView(api.getNames());
+            CodeView view = new CodeView(RunestoneAPI.getNames());
             view.setHeight("500px");
             div.add(view);
 

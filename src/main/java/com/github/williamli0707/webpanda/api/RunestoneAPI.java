@@ -41,6 +41,7 @@ public class RunestoneAPI {
                 .followRedirects(true)
                 .build();
     }
+    //TODO make class methods static
     public static void reset() {
         initClients();
         try {
@@ -138,11 +139,11 @@ public class RunestoneAPI {
         }
     }
 
-    public Hashtable<String, String> getNames() {
+    public static Hashtable<String, String> getNames() {
         return studentnamescache;
     }
 
-    public Hashtable<String, String[]> getProblems() {
+    public static Hashtable<String, String[]> getProblems() {
         return problemnamescache;
     }
 
@@ -244,7 +245,7 @@ public class RunestoneAPI {
         return studentnamescache.get(sid);
     }
 
-    public int requestGrade(String sid, String pid) {
+    public static int requestGrade(String sid, String pid) {
         String content = (String) request(new Request.Builder()
                 .url("https://runestone.academy/runestone/admin/getGradeComments?acid=" + pid + "&sid=" + sid)
                 .get()
@@ -273,7 +274,7 @@ public class RunestoneAPI {
         return new JSONObject(content).getInt("grade");
     }
 
-    public LinkedList<Attempt> requestHistory(String sid, String pid) {
+    public static LinkedList<Attempt> requestHistory(String sid, String pid) {
         MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
         JSONObject body = new JSONObject().put("acid", pid).put("sid", sid);
         RequestBody reqbody = RequestBody.create(body.toString(), mediaType);
@@ -327,11 +328,11 @@ public class RunestoneAPI {
         return returnlist;
     }
 
-    private Object request(Request request) { // no param 3 retries
+    private static Object request(Request request) { // no param 3 retries
         return request(request, 3);
     }
 
-    private Object request(Request request, int retries) {
+    private static Object request(Request request, int retries) {
         if (retries == 0) {
             throw new RuntimeException(" requests failed for " + request.url());
         }
@@ -352,7 +353,7 @@ public class RunestoneAPI {
      * @param pid the problem id of the problem to be analyzed
      * @return a HashMap with the key values of student ID's and values of metrics, average and maximum in that order.
      */
-    public HashMap<String, double[]> getAllScores(String pid) {
+    public static HashMap<String, double[]> getAllScores(String pid) {
         Hashtable<String, String> names = getNames();
         HashMap<String, double[]> scores = new HashMap<>();
         for (String key : names.keySet()) {
@@ -383,7 +384,7 @@ public class RunestoneAPI {
      * @param pids the problem IDs of the problem to be analyzed
      * @return a HashMap with the key values of student ID's and values of metrics, average and maximum in that order.
      */
-    public HashMap<String, ArrayList<Double>> getMultipleProblems(String[] pids) {
+    public static HashMap<String, ArrayList<Double>> getMultipleProblems(String[] pids) {
         Hashtable<String, String> names = getNames();
         HashMap<String, ArrayList<Double>> scores = new HashMap<>();
         for (String key : names.keySet()) scores.put(key, new ArrayList<>());
@@ -410,7 +411,7 @@ public class RunestoneAPI {
         return scores;
     }
 
-    public HashMap<String, LinkedList<Attempt>> getAllCode(String pid, Callback callback, int currPercent, int nextPercent) {
+    public static HashMap<String, LinkedList<Attempt>> getAllCode(String pid, Callback callback, int currPercent, int nextPercent) {
         Hashtable<String, String> names = getNames();
         HashMap<String, LinkedList<Attempt>> ret = new HashMap<>();
         int numStudents = 0;
@@ -421,11 +422,11 @@ public class RunestoneAPI {
         return ret;
     }
 
-    public HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> getAllCodeMultiple(Callback callback, String... pids) {
+    public static HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> getAllCodeMultiple(Callback callback, String... pids) {
         return getAllCodeMultiple(callback, Arrays.asList(pids));
     }
 
-    public HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> getAllCodeMultiple(Callback callback, Collection<String> pids) {
+    public static HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> getAllCodeMultiple(Callback callback, Collection<String> pids) {
         HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> ret = new LinkedHashMap<>(); //sid: pid: attempts
         int ind = 0;
         for(String pid: pids) {
@@ -450,96 +451,81 @@ public class RunestoneAPI {
         return ret;
     }
 
-    public ArrayList<DiffBetweenProblems> minTimeDiff2(HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data, int n) {
+    public static ArrayList<DiffBetweenProblems> minTimeDiff2(HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data, String[] pids, Callback callback) {
         ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         Hashtable<String, String> names = getNames();
-        ArrayList<DiffBetweenProblems> smallest = new ArrayList<>();
-        for(String name: names.keySet()) {
-            service.submit(() -> {
-                Attempt[][] times = new Attempt[n][]; // times[problem][attempt]
-                String[] pids = new String[n];
-                int ind = 0;
-                for(String pid: data.get(name).keySet()) {
-                    times[ind] = data.get(name).get(pid).toArray(new Attempt[0]);
-                    pids[ind] = pid;
-                    Arrays.sort(times[ind++]); // just in case it's not sorted
-                }
-                for(int i = 0;i < n;i++) {
-                    for(int j = 0;j < n;j++) {
-                        if(i == j) continue;
-                        //start from 1, so that we can compare with the previous attempt to eliminate small changes
-                        for(int a = 1;a < times[i].length;a++) {
-                            for(int b = 1;b < times[j].length;b++) {
-                                if(times[i][a].timestamp() > times[j][b].timestamp()) {
-                                    int distance = LevenshteinDistance.getDistance(times[i][a - 1].code(), times[i][a].code());
-                                    if (distance * 1.0 / times[i][a - 1].code().length() < 0.1) continue;
-                                    double curr = Math.abs(times[i][a].timestamp() - times[j][b].timestamp()) / 1000.0;
-                                    smallest.add(new DiffBetweenProblems(name, pids[j], pids[i], b + 2, a + 2, curr, distance / curr));
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        service.shutdown();
-        try {
-            service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        } catch (InterruptedException e) {throw new RuntimeException(e);}
-        return smallest;
-
-    }
-
-
-    public ArrayList<DiffBetweenProblems> minTimeDiff(HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data, int n, Callback callback) {
-        ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        Hashtable<String, String> names = getNames();
+        ArrayList<DiffBetweenProblems> suspicious = new ArrayList<>();
         AtomicInteger numStudents = new AtomicInteger();
-        ArrayList<DiffBetweenProblems> smallest = new ArrayList<>();
+        HashMap<String, ArrayList<DiffBetweenProblems>> diffs = new HashMap<>();
+        for(String pid: pids) {
+            diffs.putIfAbsent(pid, new ArrayList<>());
+        }
+
         for(String name: names.keySet()) {
             service.submit(() -> {
                 callback.call((int) (numStudents.getAndIncrement() * 100.0 / names.size()), "Processing student " + name + " (" + names.get(name) + ")");
-                Attempt[][] times = new Attempt[n][]; // times[problem][attempt]
-                String[] pids = new String[n];
+                long start = System.currentTimeMillis();
+                Attempt[][] times = new Attempt[pids.length][]; // times[problem][attempt]
                 int ind = 0;
-                for(String pid: data.get(name).keySet()) {
+                for(String pid: pids) {
                     times[ind] = data.get(name).get(pid).toArray(new Attempt[0]);
-                    pids[ind] = pid;
-                    Arrays.sort(times[ind++]); // just in case it's not sorted
+                    Arrays.sort(times[ind++]);
                 }
-                double min = 1e11;
-                DiffBetweenProblems minDiff = null;
-                for(int i = 0;i < n;i++) {
-                    for(int j = 0;j < n;j++) {
+
+                for(int i = 0;i < pids.length;i++) {
+                    for(int j = 0;j < pids.length;j++) {
                         if(i == j) continue;
                         //start from 1, so that we can compare with the previous attempt to eliminate small changes
                         for(int a = 1;a < times[i].length;a++) {
                             for(int b = 1;b < times[j].length;b++) {
                                 if(times[i][a].timestamp() > times[j][b].timestamp()) {
                                     int distance = LevenshteinDistance.getDistance(times[i][a - 1].code(), times[i][a].code());
-                                    if (distance * 1.0 / times[i][a - 1].code().length() < 0.1) continue;
+                                    if (distance * 1.0 / times[i][a - 1].code().length() < 0.2) continue; //TODO tune
                                     double curr = Math.abs(times[i][a].timestamp() - times[j][b].timestamp()) / 1000.0;
-                                    if (curr < min) { //TODO tunable
-                                        min = curr;
-                                        minDiff = new DiffBetweenProblems(name, pids[j], pids[i], b + 2, a + 2, min, distance / min);
-                                    }
+                                    if(curr > 900) continue; //TODO tune
+
+                                    diffs.get(pids[i]).add(new DiffBetweenProblems(name, pids[j], pids[i], b + 2, a + 2, curr, distance / curr));
                                 }
                             }
                         }
                     }
                 }
-                if(minDiff != null) smallest.add(minDiff);
+
+                System.out.println("Finished " + name + " " + names.get(name) + " in " + (System.currentTimeMillis() - start) + "ms");
             });
         }
         service.shutdown();
         try {
             service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {throw new RuntimeException(e);}
-        return smallest;
+
+        callback.call(100, "Processing results");
+
+        for(String pid: diffs.keySet()) {
+            System.out.println(pid);
+
+            diffs.get(pid).sort(Comparator.comparingDouble(DiffBetweenProblems::score));
+            int num = diffs.get(pid).size();
+            double avg = 0, ret = 0;
+            for(DiffBetweenProblems i: diffs.get(pid)) avg += i.score();
+            avg /= num;
+            for(DiffBetweenProblems i: diffs.get(pid)) ret += Math.pow(i.score() - avg, 2);
+            double stdev = Math.sqrt(ret / (num - 1));
+            System.out.println(avg + " " + stdev);
+
+            for(DiffBetweenProblems i: diffs.get(pid)) {
+                if((i.score() - avg) / stdev >= 4) { //TODO tunable
+                    suspicious.add(i);
+                }
+            }
+        }
+
+        return suspicious;
+
     }
 
     //n is num of problems to analyze
-    public ArrayList<Diff> findLargeEdits(HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data, int n, Callback callback) {
+    public static ArrayList<Diff> findLargeEdits(HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data, int n, Callback callback) {
         Hashtable<String, String> names = getNames();
         HashMap<String, ArrayList<Diff>> diffs = new HashMap<>(); //one entry for each problem, values are combined diffs from all students for that problem
         int ind = 0;
