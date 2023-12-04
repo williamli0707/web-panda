@@ -41,7 +41,6 @@ public class RunestoneAPI {
                 .followRedirects(true)
                 .build();
     }
-    //TODO make class methods static
     public static void reset() {
         initClients();
         try {
@@ -274,7 +273,7 @@ public class RunestoneAPI {
         return new JSONObject(content).getInt("grade");
     }
 
-    public static LinkedList<Attempt> requestHistory(String sid, String pid) {
+    public static ArrayList<Attempt> requestHistory(String sid, String pid) {
         MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
         JSONObject body = new JSONObject().put("acid", pid).put("sid", sid);
         RequestBody reqbody = RequestBody.create(body.toString(), mediaType);
@@ -310,22 +309,15 @@ public class RunestoneAPI {
         Iterator<Object> historyiter = history.iterator();
         Iterator<Object> timestampsiter = timestamps.iterator();
 
-        LinkedList<Attempt> sortlist = new LinkedList<>();
+        ArrayList<Attempt> sortlist = new ArrayList<>();
 
         while (historyiter.hasNext()) {
             // we opt to use DateParserUtils because I'm too lazy to convert dates.
-            sortlist.add(new Attempt(DateParserUtils.parseDate(timestampsiter.next().toString()).getTime(), (String) historyiter.next(), 0));
+            sortlist.add(new Attempt(DateParserUtils.parseDate(timestampsiter.next().toString()).getTime(), (String) historyiter.next()));
         }
         sortlist.sort(Attempt::compareTo);
 
-        LinkedList<Attempt> returnlist = new LinkedList<>();
-
-        int index = 2; // lines up with runestone viewer
-        for (Attempt a : sortlist) {
-            returnlist.add(new Attempt(a.timestamp(), a.code(), index++));
-        }
-
-        return returnlist;
+        return sortlist;
     }
 
     private static Object request(Request request) { // no param 3 retries
@@ -357,7 +349,7 @@ public class RunestoneAPI {
         Hashtable<String, String> names = getNames();
         HashMap<String, double[]> scores = new HashMap<>();
         for (String key : names.keySet()) {
-            LinkedList<Attempt> history = requestHistory(key, pid);
+            ArrayList<Attempt> history = requestHistory(key, pid);
             double min = 0, max = 0, sum = 0, num = 0;
             Attempt prev = null;
             for (Attempt attempt : history) {
@@ -379,41 +371,9 @@ public class RunestoneAPI {
         return scores;
     }
 
-    /**
-     * Returns the edit distance / second * 1000 metric for all students for given problems.
-     * @param pids the problem IDs of the problem to be analyzed
-     * @return a HashMap with the key values of student ID's and values of metrics, average and maximum in that order.
-     */
-    public static HashMap<String, ArrayList<Double>> getMultipleProblems(String[] pids) {
+    public static HashMap<String, ArrayList<Attempt>> getAllCode(String pid, Callback callback, int currPercent, int nextPercent) {
         Hashtable<String, String> names = getNames();
-        HashMap<String, ArrayList<Double>> scores = new HashMap<>();
-        for (String key : names.keySet()) scores.put(key, new ArrayList<>());
-        for(String i: pids) {
-            for (String key : names.keySet()) {
-                LinkedList<Attempt> history = requestHistory(key, i);
-                double min = 0, max = 0, sum = 0, num = 0;
-                Attempt prev = null;
-                for (Attempt attempt : history) {
-                    num++;
-                    if(num == 1) {
-                        prev = attempt;
-                        continue;
-                    }
-                    double diff = 1000d * LevenshteinDistance.getDistance(prev.code(), attempt.code()) / (attempt.timestamp() - prev.timestamp());
-                    min = Math.min(min, diff);
-                    max = Math.max(max, diff);
-                    sum += diff;
-                    prev = attempt;
-                    scores.get(key).add(diff);
-                }
-            }
-        }
-        return scores;
-    }
-
-    public static HashMap<String, LinkedList<Attempt>> getAllCode(String pid, Callback callback, int currPercent, int nextPercent) {
-        Hashtable<String, String> names = getNames();
-        HashMap<String, LinkedList<Attempt>> ret = new HashMap<>();
+        HashMap<String, ArrayList<Attempt>> ret = new HashMap<>();
         int numStudents = 0;
         for (String key : names.keySet()) {
             callback.call((int) (currPercent + (numStudents++ * 1.0 * (nextPercent - currPercent) / names.size())), "Getting data for problem " + pid);
@@ -433,7 +393,7 @@ public class RunestoneAPI {
             int currPercent = (int) (ind++ * 100.0 / pids.size()), nextPercent = (int) (ind * 100.0 / pids.size());
             callback.call(currPercent, "Getting data for problem " + pid);
             int numStudents = 0;
-            HashMap<String, LinkedList<Attempt>> hm = getAllCode(pid, callback, currPercent, nextPercent);
+            HashMap<String, ArrayList<Attempt>> hm = getAllCode(pid, callback, currPercent, nextPercent);
             for(String sid: hm.keySet()) {
                 if(!ret.containsKey(sid)) {
                     ret.put(sid, new LinkedHashMap<>());
@@ -441,7 +401,7 @@ public class RunestoneAPI {
                 if(!ret.get(sid).containsKey(pid)) {
                     ret.get(sid).put(pid, new ArrayList<>());
                 }
-                LinkedList<Attempt> cur = hm.get(sid);
+                ArrayList<Attempt> cur = hm.get(sid);
                 if(cur.size() == 0) continue;
                 for (Attempt attempt : cur) {
                     ret.get(sid).get(pid).add(attempt);

@@ -1,5 +1,6 @@
 package com.github.williamli0707.webpanda.views;
 
+import com.github.williamli0707.webpanda.api.RunestoneAPI;
 import com.github.williamli0707.webpanda.db.CodescanRecord;
 import com.github.williamli0707.webpanda.records.Diff;
 import com.github.williamli0707.webpanda.records.DiffBetweenProblems;
@@ -60,7 +61,9 @@ public class CodeView extends TabSheet {
         edits.setItems(record.getLargeEdits());
 
         edits.setItemDetailsRenderer(new ComponentRenderer<ProblemViewer, Diff>(ProblemViewer::new, (viewer, diff) -> {
-            viewer.setCode(record.getData().get(diff.sid()).get(diff.pid()), diff.num() - 2);
+//            viewer.setCode(record.getData().get(diff.sid()).get(diff.pid()), diff.num() - 2);
+
+            viewer.setCode(RunestoneAPI.requestHistory(diff.sid(), diff.pid()), diff.num() - 2);
         }));
 
         div2.add(edits);
@@ -80,8 +83,9 @@ public class CodeView extends TabSheet {
         timeDiff.setMultiSort(true, Grid.MultiSortPriority.APPEND);
         timeDiff.setItems(record.getTimeDiffs());
 
-        timeDiff.setItemDetailsRenderer(new ComponentRenderer<DoubleProblemViewer, DiffBetweenProblems>(DoubleProblemViewer::new, (viewer, diff) -> {
-            viewer.setCode(record.getData().get(diff.sid()).get(diff.pid1()), diff.a1() - 2, record.getData().get(diff.sid()).get(diff.pid2()), diff.a2() - 2);
+        timeDiff.setItemDetailsRenderer(new ComponentRenderer<>(DoubleProblemViewer::new, (viewer, diff) -> {
+//            viewer.setCode(record.getData().get(diff.sid()).get(diff.pid1()), diff.a1() - 2, record.getData().get(diff.sid()).get(diff.pid2()), diff.a2() - 2);
+            viewer.setCode(RunestoneAPI.requestHistory(diff.sid(), diff.pid1()), diff.a1() - 2, RunestoneAPI.requestHistory(diff.sid(), diff.pid2()), diff.a2() - 2);
         }));
 
         div1.add(timeDiff);

@@ -3,7 +3,6 @@ package com.github.williamli0707.webpanda.db;
 //import org.jetbrains.annotations.NotNull;
 
 import com.github.williamli0707.webpanda.WebPandaApplication;
-import com.github.williamli0707.webpanda.records.Attempt;
 import com.github.williamli0707.webpanda.records.Diff;
 import com.github.williamli0707.webpanda.records.DiffBetweenProblems;
 import com.google.gson.Gson;
@@ -11,8 +10,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 
 @Document("codescantasks")
 public class CodescanRecord implements Comparable<CodescanRecord> {
@@ -22,17 +19,13 @@ public class CodescanRecord implements Comparable<CodescanRecord> {
     private String[] pids;
     private ArrayList<Diff> largeDiffs;
     private ArrayList<DiffBetweenProblems> timeDiffs;
-    private HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data;
-    private String dataString;
     private String version;
 
-    public CodescanRecord(ArrayList<Diff> largeDiffs, ArrayList<DiffBetweenProblems> timeDiffs, String[] pids, HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data) {
+    public CodescanRecord(ArrayList<Diff> largeDiffs, ArrayList<DiffBetweenProblems> timeDiffs, String[] pids) {
         this.id = String.valueOf(System.currentTimeMillis());
         this.largeDiffs = largeDiffs;
         this.timeDiffs = timeDiffs;
         this.pids = pids;
-        this.data = data;
-        dataString = gson.toJson(data);
         this.version = WebPandaApplication.version;
     }
 
@@ -41,7 +34,6 @@ public class CodescanRecord implements Comparable<CodescanRecord> {
         this.largeDiffs = new ArrayList<>();
         this.timeDiffs = new ArrayList<>();
         this.pids = new String[0];
-        data = new HashMap<>();
         this.version = WebPandaApplication.version;
     }
 
@@ -58,18 +50,6 @@ public class CodescanRecord implements Comparable<CodescanRecord> {
 
     public String getId() {
         return id;
-    }
-
-    public HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> getData() {
-        return data;
-    }
-
-    public String getDataString() {
-        return dataString;
-    }
-
-    public void setDataString(String dataString) {
-        this.dataString = dataString;
     }
 
     public String getVersion() {
@@ -96,15 +76,6 @@ public class CodescanRecord implements Comparable<CodescanRecord> {
 
     public void setPids(String[] pids) {
         this.pids = pids;
-    }
-
-    public void setData(HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data) {
-        this.data = data;
-        dataString = gson.toJson(data);
-    }
-
-    public void setData(String data) {
-        this.data = new Gson().fromJson(data, HashMap.class); //weird cast but it should work
     }
 
     //reversed so that the newest ones are first

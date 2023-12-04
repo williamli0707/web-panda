@@ -3,7 +3,7 @@ package com.github.williamli0707.webpanda.records;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 
-public record Attempt(long timestamp, String code, int index) implements Comparable<Attempt> {
+public record Attempt(long timestamp, String code) implements Comparable<Attempt> {
     private static SimpleDateFormat sdf = new SimpleDateFormat("E MMMM d h:m:s a z y");
     @Override
     public int compareTo(Attempt o) {
@@ -12,6 +12,6 @@ public record Attempt(long timestamp, String code, int index) implements Compara
 
     @Override
     public String toString() {
-        return "Attempt " + index + " (" + sdf.format(new Date(timestamp)) + "): \n" + code + "\n";
+        return "Attempt " + " (" + sdf.format(new Date(timestamp)) + "): \n" + code + "\n";
     }
 }
