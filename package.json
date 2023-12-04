@@ -3,6 +3,7 @@
   "license": "UNLICENSED",
   "type": "module",
   "dependencies": {
+    "@polymer/paper-slider": "3.0.1",
     "@polymer/polymer": "3.5.1",
     "@vaadin/a11y-base": "24.2.3",
     "@vaadin/accordion": "24.2.3",
@@ -99,6 +100,7 @@
   },
   "vaadin": {
     "dependencies": {
+      "@polymer/paper-slider": "3.0.1",
       "@polymer/polymer": "3.5.1",
       "@vaadin/a11y-base": "24.2.3",
       "@vaadin/accordion": "24.2.3",
@@ -193,7 +195,7 @@
       "workbox-core": "7.0.0",
       "workbox-precaching": "7.0.0"
     },
-    "hash": "939850eee7bccef3396aac29a395b4e3096cf9ed6e4ac80903dea2cef04f23f4"
+    "hash": "55eac3e0052438af717fb62c078ee33aaa530c59fda966c7fd376dd3fc23ce56"
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
@@ -271,6 +273,7 @@
     "@vaadin/map": "$@vaadin/map",
     "@vaadin/rich-text-editor": "$@vaadin/rich-text-editor",
     "proj4": "$proj4",
-    "line-awesome": "$line-awesome"
+    "line-awesome": "$line-awesome",
+    "@polymer/paper-slider": "$@polymer/paper-slider"
   }
 }
