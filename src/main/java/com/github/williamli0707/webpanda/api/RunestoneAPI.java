@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RunestoneAPI {
+    private static int timeDiffSensitivity;
     private static OkHttpClient client, noRedirectClient;
     private static OkHttpClient client2;
     private static CustomCookieJar cookiejar;
