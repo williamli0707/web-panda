@@ -91,7 +91,6 @@ public class MainView extends VerticalLayout {
                 });
                 Callback callback1 = new AnalyzeCallback(status1), callback2 = new AnalyzeCallback(status2), callback3 = new AnalyzeCallback(status3);
                 HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data = RunestoneAPI.getAllCodeMultiple(callback1, selectedProblems);
-                record.setData(data);
 
                 System.out.println("done getting data");
 
