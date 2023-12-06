@@ -23,7 +23,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RunestoneAPI {
-    private static int timeDiffSensitivity;
+    public static int timeDiffSensitivity;
+    public static int largeEditSensitivity;
     private static OkHttpClient client, noRedirectClient;
     private static OkHttpClient client2;
     private static CustomCookieJar cookiejar;
@@ -441,9 +442,9 @@ public class RunestoneAPI {
                             for(int b = 1;b < times[j].length;b++) {
                                 if(times[i][a].timestamp() > times[j][b].timestamp()) {
                                     int distance = LevenshteinDistance.getDistance(times[i][a - 1].code(), times[i][a].code());
-                                    if (distance * 1.0 / times[i][a - 1].code().length() < 0.2) continue; //TODO tune
+                                    if (distance * 1.0 / times[i][a - 1].code().length() < 1 - timeDiffSensitivity / 100.0) continue; //TODO tune
                                     double curr = Math.abs(times[i][a].timestamp() - times[j][b].timestamp()) / 1000.0;
-                                    if(curr > 900) continue; //TODO tune
+                                    if(curr > 2000 * timeDiffSensitivity / 100.0) continue; //tunable from 0-2000 seconds
 
                                     diffs.get(pids[i]).add(new DiffBetweenProblems(name, pids[j], pids[i], b + 2, a + 2, curr, distance / curr));
                                 }
@@ -475,7 +476,7 @@ public class RunestoneAPI {
             System.out.println(avg + " " + stdev);
 
             for(DiffBetweenProblems i: diffs.get(pid)) {
-                if((i.score() - avg) / stdev >= 4) { //TODO tunable
+                if((i.score() - avg) / stdev >= timeDiffSensitivity / 10.0) { //tunable from 0-10
                     suspicious.add(i);
                 }
             }
@@ -513,7 +514,7 @@ public class RunestoneAPI {
             for(Diff i: diffs.get(pid)) ret += Math.pow(i.score() - avg, 2);
             double stdev = Math.sqrt(ret / (num - 1));
             for(Diff i: diffs.get(pid)) {
-                if((i.score() - avg) / stdev >= 3) { //TODO tunable
+                if((i.score() - avg) / stdev >= largeEditSensitivity / 10) { //tunable from 1-10
                     suspicious.add(i);
                 }
             }
