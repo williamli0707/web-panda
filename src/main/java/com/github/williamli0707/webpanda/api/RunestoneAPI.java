@@ -514,7 +514,7 @@ public class RunestoneAPI {
             for(Diff i: diffs.get(pid)) ret += Math.pow(i.score() - avg, 2);
             double stdev = Math.sqrt(ret / (num - 1));
             for(Diff i: diffs.get(pid)) {
-                if((i.score() - avg) / stdev >= largeEditSensitivity / 10) { //tunable from 1-10
+                if((i.score() - avg) / stdev >= 10 - largeEditSensitivity / 10) { //tunable from 1-10
                     suspicious.add(i);
                 }
             }
