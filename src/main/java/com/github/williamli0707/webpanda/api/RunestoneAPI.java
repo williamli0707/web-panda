@@ -463,12 +463,12 @@ public class RunestoneAPI {
             String out = resp.body().string();
 
             resp.close();
-
+            lock = false;
             return out;
         } catch (Exception e) {
+            lock = false;
             return request(request, retries - 1);
         }
-        lock = false;
     }
 
     /**
