@@ -41,6 +41,24 @@ Run `mvn clean package -Pproduction` to package the jar into the folder `targets
   [App Layout](https://vaadin.com/docs/components/app-layout).
 - `views` package in `src/main/java/com/github/williamli0707` contains the server-side Java views of the application.
 - `themes` folder in `frontend/` contains the custom CSS styles.
+## Known Issues
+
+Running the application, the log will occasionally show an error similar to
+```
+java.lang.IllegalArgumentException: Invalid character found in method name [0x160x030x010x00....]. HTTP method names must be tokens
+ at org.apache.coyote.http11.Http11InputBuffer.parseRequestLine(Http11InputBuffer.java:407) ~[tomcat-embed-core-10.1.15.jar!/:na]
+        at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:264) ~[tomcat-embed-core-10.1.15.jar!/:na]
+        at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.15.jar!/:na]
+        at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896) ~[tomcat-embed-core-10.1.15.jar!/:na]
+        at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1744) ~[tomcat-embed-core-10.1.15.jar!/:na]
+        at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.15.jar!/:na]
+        at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191) ~[tomcat-embed-core-10.1.15.jar!/:na]
+        at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-10.1.15.jar!/:na]
+        at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) ~[tomcat-embed-core-10.1.15.jar!/:na]
+        at java.base/java.lang.Thread.run(Thread.java:833) ~[na:na]
+```
+
+[This issue has been documented](https://stackoverflow.com/questions/42218237/tomcat-java-lang-illegalargumentexception-invalid-character-found-in-method-na) and it is due to clients sending HTTPS requests when the server expects HTTP requests, although I'm not sure how to fix it.
 ## Acknowledgements
 
 - [Base Vaadin and intiial RunestoneAPI request methods](//https://github.com/caupcakes/runestone-submission-downloader)
