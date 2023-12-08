@@ -23,7 +23,7 @@ public class HistoryView extends VerticalLayout {
     public HistoryView() {
         setHeight("100%");
         setWidth("100%");
-        System.out.println(MongoManager.repository.count());
+//        System.out.println(MongoManager.repository.count());
         List<CodescanRecord> res = MongoManager.repository.findAll();
         Collections.sort(res);
         Accordion accordion = new Accordion();
