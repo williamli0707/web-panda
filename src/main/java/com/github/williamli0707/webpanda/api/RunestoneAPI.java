@@ -52,6 +52,12 @@ public class RunestoneAPI {
     public static String user, password;
 
     /**
+     * Stores the lock status. This is used to prevent the thread from resetting the API cokies while the user is
+     * requesting problems to be analyzed.
+     */
+    public static volatile boolean lock = false;
+
+    /**
      * Initializes the three OKHttpClients used for accessing Runestone. client and noRedirectClient are used
      * in the login process and need automatic cookie jars for the reasons described above.
      */
@@ -75,6 +81,15 @@ public class RunestoneAPI {
      * expire, they need to be re-requested, so we create new clients and generate the cookies again.
      */
     public static void reset() {
+        while(lock) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        lock = true;
+
         initClients();
         try {
             resetCookie();
@@ -83,6 +98,8 @@ public class RunestoneAPI {
         }
         initNameCache();
         initProblemCache();
+
+        lock = false;
     }
 
     private final static Hashtable<String, String> studentnamescache = new Hashtable<>();
@@ -231,7 +248,7 @@ public class RunestoneAPI {
      * that we can access student history with client2.
      * @throws IOException in case the requests fail.
      */
-    public static void resetCookie() throws IOException {
+    private static void resetCookie() throws IOException {
         Response response = noRedirectClient.newCall(new Request.Builder()
                 .url(new URL("https://runestone.academy/"))
                 .get()
@@ -434,7 +451,14 @@ public class RunestoneAPI {
         if (retries == 0) {
             throw new RuntimeException(" requests failed for " + request.url());
         }
-
+        while(lock) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        lock = true;
         try (Response resp = client2.newCall(request).execute()) {
             String out = resp.body().string();
 
@@ -444,6 +468,7 @@ public class RunestoneAPI {
         } catch (Exception e) {
             return request(request, retries - 1);
         }
+        lock = false;
     }
 
     /**
