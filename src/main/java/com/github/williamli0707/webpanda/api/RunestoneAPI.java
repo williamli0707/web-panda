@@ -22,13 +22,34 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * API for accessing Runestone, getting student data, and calculations such
+ * as time differences and large edits.
+ *
+ */
 public class RunestoneAPI {
+    //Sensitivity settings, read and set from SettingsView.java
     public static int timeDiffSensitivity;
     public static int largeEditSensitivity;
+
+    /**
+     * 3 clients are needed. client is used to get the Runestone cookies, because for some reason when
+     * manually getting the cookies and setting them in the header, the subsequent requests fail. Using
+     * an automatic cookie handler fixes this; however, the automatic cookie handler does not take the
+     * access token cookie for some reason. The access token is the cookie that is used to access student
+     * code history.
+     * Therefore, we use client and noRedirectClient with automatically handled cookie jars, both used
+     * in the login process, to intercept the cookies from the login process and use them in subsequent
+     * requests with client2. client2 is used for all other requests, like getting history for a student.
+     */
     private static OkHttpClient client, noRedirectClient;
     private static OkHttpClient client2;
     private static CustomCookieJar cookiejar;
 
+    /**
+     * Initializes the three OKHttpClients used for accessing Runestone. client and noRedirectClient are used
+     * in the login process and need automatic cookie jars for the reasons described above.
+     */
     private static void initClients() {
         cookiejar = new CustomCookieJar();
         client = new OkHttpClient.Builder()
@@ -43,6 +64,11 @@ public class RunestoneAPI {
                 .followRedirects(true)
                 .build();
     }
+
+    /**
+     * Resets the clients, resets the cookies, and then resets the name and problem cache. When Session ID cookies
+     * expire, they need to be re-requested, so we create new clients and generate the cookies again.
+     */
     public static void reset() {
         initClients();
         try {
@@ -72,6 +98,36 @@ public class RunestoneAPI {
         reset();
     }
 
+    /**
+     * Gets all the problems from Runestone. The problems come from
+     * <a href="https://runestone.academy/runestone/admin/grading">...</a> and the problem list is embedded
+     * in the HTML in a script object with id "getassignmentinfo". Who knows why they did it this way. The
+     * problem list is in the format of a JSON object, for example:
+     * {
+     *      "Practice - Conditionals 2": ["lhs_7_16+"],
+     *      "Practice - Conditionals": ["lhs_7_15+"],
+     *      "Unit 4 Reading": [
+     *              "4. Python Turtle Graphics/4.1 Hello Little Turtles!",
+     *              "4. Python Turtle Graphics/4.2 Our First Turtle Program",
+     *              ...
+     *       ],
+     *       ...
+     *  }
+     * The progblems which we care about have a + at the end, so we remove that. We then store the problems
+     * in the private field problemnamescache.
+     *
+     * Another way to get the problems is to use the same HTTP request that Runestone sends to get the summary
+     * of the problems. However, some of the problem names come with HTML embedded in them, which makes it more
+     * annoying to isolate the problem names. For example, some problems would be listed as lhs_4_3 while some
+     * would look like
+     * "<a href=\"/runestone/dashboard/exercisemetrics?id=ex_3_10&chapter=PythonTurtle\">ex_3_10</a>"
+     * If this method fails in the future, whoever is fixing this can try
+     * sending a request to
+     * https://runestone.academy/runestone/admin/get_assignment_release_states
+     * to get the section/assignment lists, and then
+     * https://runestone.academy/runestone/assignments/get_summary?assignment=Unit%208%20Problem%20Set
+     * or similar (get_summary?[url encoded problemset name]) to get the problem list.
+     */
     private static void initProblemCache() {
         try {
             Response resp = client.newCall(new Request.Builder()
@@ -98,6 +154,11 @@ public class RunestoneAPI {
         }
     }
 
+    /**
+     * Initializes the name cache. This process is much simpler than the problem cache. The list of students
+     * is stored in JSON format at https://runestone.academy/runestone/admin/course_students. We parse the JSON
+     * and store it in a Hashtable.
+     */
     private static void initNameCache() {
         Hashtable<String, String> newnames = new Hashtable<>();
 
@@ -140,14 +201,35 @@ public class RunestoneAPI {
         }
     }
 
+    /**
+     * Returns the cached list of students.
+     * @return the cached list of students
+     */
     public static Hashtable<String, String> getNames() {
         return studentnamescache;
     }
 
+    /**
+     * Returns the cached list of problems.
+     * @return the cached list of problems
+     */
     public static Hashtable<String, String[]> getProblems() {
         return problemnamescache;
     }
 
+    /**
+     * Resets the cookie used for requests. This is needed because the session ID cookie expires after a while, and is
+     * also needed when the application starts up. The process is as follows:
+     * 1. Visit https://runestone.academy/ to get the session ID cookie, which is then stored in the cookie jar so
+     * that the log in request is associated with that cookie.
+     * 2. Visit https://runestone.academy/user/login?_next=/runestone/admin to get the form key. This page is the login
+     * page, and the login form has a form key which is used in the final request to log in.
+     * 3. Send a POST request to https://runestone.academy/user/login?_next=/runestone/admin with the username and
+     * password, which as far as I know associates the session ID cookie with a logged in state.
+     * 4. Visit https://runestone.academy/ to get the access token cookie, which is then stored in the cookie jar so
+     * that we can access student history with client2.
+     * @throws IOException in case the requests fail.
+     */
     public static void resetCookie() throws IOException {
         Response response = noRedirectClient.newCall(new Request.Builder()
                 .url(new URL("https://runestone.academy/"))
@@ -240,12 +322,54 @@ public class RunestoneAPI {
                 "_gcl_au=1.1.1332442316.1694036375; __utmc=28105279; " +
                 "RS_info=\"{\\\"tz_offset\\\": 8.0}\"";
         response.close();
+
+        MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
+        JSONObject jbody = new JSONObject().put("acid", "lhs_6_1").put("sid", "lhs_5230007");
+        RequestBody reqbody = RequestBody.create(jbody.toString(), mediaType);
+
+        Request request = new Request.Builder()
+                .url("https://runestone.academy/ns/assessment/gethist")
+                .post(reqbody)
+                .addHeader("Accept", "application/json")
+                //ignore accept-encoding
+                .addHeader("Accept-Language", "en-US,en;q=0.9")
+                .addHeader("Connection", "keep-alive")
+                .addHeader("Content-Type", "application/json; charset=utf-8")
+                .addHeader("Cookie", "_gcl_au=1.1.1332442316.1694036375; __utmc=28105279; session_id_admin=205.173.47.254-12e99be8-596a-48ec-b212-f66d61c5ebdd; __utmz=28105279.1699043992.22.15.utmcsr=landing.runestone.academy|utmccn=(referral)|utmcmd=referral|utmcct=/; session_id_runestone=52245321:fe40ec64-0315-4bcf-9d1a-8793213d7c94; access_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ3bGkyMjMiLCJleHAiOjE3MDg4OTEyNTZ9.6_yRcDx1sbo48xHi5EQqwFzP3TWZeKOnj6IR-COfXgw; __utma=28105279.603586017.1694036376.1699766648.1699819267.25; RS_info=\"{\\\"readings\\\": []\\054 \\\"tz_offset\\\": 8.0}\"; __utmt=1; __utmb=28105279.3.10.1699819267")
+                .addHeader("Host", "runestone.academy")
+                .addHeader("Origin", "https://runestone.academy")
+                .addHeader("Referer", "https://runestone.academy/runestone/admin/grading")
+                .addHeader("Sec-Ch-Ua", "\"Google Chrome\";v=\"119\", \"Chromium\";v=\"119\", \"Not?A_Brand\";v=\"24\"")
+                .addHeader("Sec-Ch-Ua-Mobile", "?0")
+                .addHeader("Sec-Ch-Ua-Platform", "\"macOS\"")
+                .addHeader("Sec-Fetch-Dest", "empty")
+                .addHeader("Sec-Fetch-Mode", "cors")
+                .addHeader("Sec-Fetch-Site", "same-origin")
+                .addHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36")
+                .addHeader("accept", "application/json")
+                .build();
+
+        Response resp = client.newCall(request).execute();
+
+        System.out.println(resp.body().string());
     }
 
+    /**
+     * Returns the name of a student given their ID.
+     * @param sid the student ID
+     * @return the name of the student
+     */
     public static String getName(String sid) {
         return studentnamescache.get(sid);
     }
 
+    /**
+     * Returns the grade given to a student for a problem. Although this method hasn't been used, it may be useful in
+     * the future.
+     * @param sid the student ID
+     * @param pid the problem ID
+     * @return the grade given to the student for the problem
+     */
     public static int requestGrade(String sid, String pid) {
         String content = (String) request(new Request.Builder()
                 .url("https://runestone.academy/runestone/admin/getGradeComments?acid=" + pid + "&sid=" + sid)
@@ -275,6 +399,13 @@ public class RunestoneAPI {
         return new JSONObject(content).getInt("grade");
     }
 
+    /**
+     * Returns the code history for a problem for a particular student. As the Runestone Admin website uses
+     * https://runestone.academy/ns/assessment/gethist under the hood to access history, we do the same.
+     * @param sid the student ID
+     * @param pid the problem ID
+     * @return the code history for the problem for the student, in the format of an ordered ArrayList of Attempts.
+     */
     public static ArrayList<Attempt> requestHistory(String sid, String pid) {
         MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
         JSONObject body = new JSONObject().put("acid", pid).put("sid", sid);
@@ -343,36 +474,14 @@ public class RunestoneAPI {
     }
 
     /**
-     * Returns the edit distance / second * 10000 metric for all students for a given problem.
-     * @param pid the problem id of the problem to be analyzed
-     * @return a HashMap with the key values of student ID's and values of metrics, average and maximum in that order.
+     * Gets all code for a given problem from all students.
+     * @param pid the problem ID
+     * @param callback a callback for letting the GUI know the progress of the request.
+     * @param currPercent the current percent of the stage for the callback.
+     * @param nextPercent the next percent of the stage for the callback.
+     * @return a HashMap of student IDs to an ArrayList of Attempts, which are the code history for the problem for
+     * the student.
      */
-    public static HashMap<String, double[]> getAllScores(String pid) {
-        Hashtable<String, String> names = getNames();
-        HashMap<String, double[]> scores = new HashMap<>();
-        for (String key : names.keySet()) {
-            ArrayList<Attempt> history = requestHistory(key, pid);
-            double min = 0, max = 0, sum = 0, num = 0;
-            Attempt prev = null;
-            for (Attempt attempt : history) {
-                num++;
-                if(num == 1) {
-                    prev = attempt;
-                    continue;
-                }
-                double diff = 1000d * LevenshteinDistance.getDistance(prev.code(), attempt.code()) / (attempt.timestamp() - prev.timestamp());
-                min = Math.min(min, diff);
-                max = Math.max(max, diff);
-                sum += diff;
-                prev = attempt;
-            }
-            if(num == 1) continue;
-            sum /= (num - 1);
-            scores.put(key, new double[]{sum, max});
-        }
-        return scores;
-    }
-
     public static HashMap<String, ArrayList<Attempt>> getAllCode(String pid, Callback callback, int currPercent, int nextPercent) {
         Hashtable<String, String> names = getNames();
         HashMap<String, ArrayList<Attempt>> ret = new HashMap<>();
@@ -384,10 +493,23 @@ public class RunestoneAPI {
         return ret;
     }
 
+    /**
+     * Gets all code for given problems from all students. Although this method is not used it may be useful in the
+     * future for getting data for multiple problems at once using a String[] or just String instead of a List.
+     * @param callback a callback for letting the GUI know the progress of the request.
+     * @param pids the problem IDs
+     * @return a HashMap of student IDs to a HashMap of problem IDs to an ArrayList of Attempts
+     */
     public static HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> getAllCodeMultiple(Callback callback, String... pids) {
         return getAllCodeMultiple(callback, Arrays.asList(pids));
     }
 
+    /**
+     * Gets all code for given problems from all students.
+     * @param callback a callback for letting the GUI know the progress of the request.
+     * @param pids the problem IDs
+     * @return a HashMap of student IDs to a HashMap of problem IDs to an ArrayList of Attempts
+     */
     public static HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> getAllCodeMultiple(Callback callback, Collection<String> pids) {
         HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> ret = new LinkedHashMap<>(); //sid: pid: attempts
         int ind = 0;
@@ -413,7 +535,25 @@ public class RunestoneAPI {
         return ret;
     }
 
-    public static ArrayList<DiffBetweenProblems> minTimeDiff2(HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data, String[] pids, Callback callback) {
+    /**
+     * Calculates the minimum time differences between submissions of problems. Multithreading implemented because
+     * it is very slow. For a given list of problems, the process is as follows:
+     * 1. Go through all submissions and cut out ones which were minor edits or which took too long. Minor edits will
+     * drag down the mean, and submissions which took too long will lower the mean as well. They also mess around with
+     * the standard deviation making it harder to find outliers using z-scores. The amount of submissions cut out
+     * are dependent on the timeDiffSensitivity field.
+     * 2. Using each submission which meets the requirements, calculate the mean and standard deviation for each
+     * problem being analyzed.
+     * 3. Go through each submission again and calculate the z-score for each submission. If the z-score is higher
+     * than a calculated value using the timeDiffSensitivity, then it is considered an outlier.
+     * @param data the data for the problem IDs given, in the format which getAllCodeMultiple() returns. The HashMap
+     *             has a key of student ID, and a value of a HashMap with a key of problem ID and a value of the list
+     *             of submissions for that problem for that student.
+     * @param pids the problem IDs to analyze
+     * @param callback a callback for letting the GUI know the progress of the request.
+     * @return an ArrayList of DiffBetweenProblems, with found suspicious submissions.
+     */
+    public static ArrayList<DiffBetweenProblems> minTimeDiff(HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data, String[] pids, Callback callback) {
         ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         Hashtable<String, String> names = getNames();
         ArrayList<DiffBetweenProblems> suspicious = new ArrayList<>();
@@ -487,6 +627,18 @@ public class RunestoneAPI {
     }
 
     //n is num of problems to analyze
+
+    /**
+     * Finds large edits in code. This is done by calculating the Levenshtein distance between each submission and the
+     * previous submission, and if the distance is greater than a certain threshold dependent on largeEditSensitivity,
+     * then it is considered a large edit.
+     * @param data the data for the problem IDs given, in the format which getAllCodeMultiple() returns. The HashMap
+     *             has a key of student ID, and a value of a HashMap with a key of problem ID and a value of the list
+     *             of submissions for that problem for that student.
+     * @param n the number of problems to analyze
+     * @param callback a callback for letting the GUI know the progress of the request.
+     * @return an ArrayList of Diff, with found suspicious submissions.
+     */
     public static ArrayList<Diff> findLargeEdits(HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data, int n, Callback callback) {
         Hashtable<String, String> names = getNames();
         HashMap<String, ArrayList<Diff>> diffs = new HashMap<>(); //one entry for each problem, values are combined diffs from all students for that problem

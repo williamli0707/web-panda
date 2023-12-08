@@ -63,8 +63,8 @@ public class WebPandaApplication implements CommandLineRunner, AppShellConfigura
 		MongoManager.repository = codescanRepo;
 		RunestoneAPI.timeDiffSensitivity = preferences.getInt("timeDiffSensitivity", 50);
 		RunestoneAPI.largeEditSensitivity = preferences.getInt("largeEditSensitivity", 50);
-		System.out.println("Time diff sensitivity: " + RunestoneAPI.timeDiffSensitivity);
-		System.out.println("Large edit sensitivity: " + RunestoneAPI.largeEditSensitivity);
+//		System.out.println("Time diff sensitivity: " + RunestoneAPI.timeDiffSensitivity);
+//		System.out.println("Large edit sensitivity: " + RunestoneAPI.largeEditSensitivity);
 //		codescanRepo.save(new CodescanRecord(new ArrayList<>(), new ArrayList<>(), new String[] {"1", "2"}, new HashMap<>()));
 	}
 }

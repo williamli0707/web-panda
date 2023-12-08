@@ -1,45 +1,52 @@
-# My App
 
-This project can be used as a starting point to create your own Vaadin application with Spring Boot.
-It contains all the necessary configuration and some placeholder files to get you started.
+# Web-PANDA
 
-## Running the application
+A Vaadin and Spring boot application to help with cheat detection in [Runestone](https://landing.runestone.academy/), a computer science education platform. Developed for Mr. Kwong at LHS.
 
-The project is a standard Maven project. To run it from the command line,
-type `mvnw` (Windows), or `./mvnw` (Mac & Linux), then open
-http://localhost:8080 in your browser.
+The application pulls student data by generating a Runestone Session ID cookie and then using Runestone's API functions.
 
-You can also import the project to your IDE of choice as you would with any
-Maven project. Read more on [how to import Vaadin projects to different IDEs](https://vaadin.com/docs/latest/guide/step-by-step/importing) (Eclipse, IntelliJ IDEA, NetBeans, and VS Code).
+When analyzing a problem it will take into account large edits and small time differences between submissions of different problems. Submissions such as
+- Submission 3 for Problem A having 500 characters changed from Submission 2 of the same problem, when most other submissions by students for this problem have changes of around 30 characters.
+- Submission 4 of Problem B at 4:15 PM having 200 characters changed from the previous submission, where the student submitted code for Submission 3 of Problem A one minute earlier, at 4:14 PM. This probably means that they changed 200 characters in possibly less than a minute, which is usually cause for suspicion.
 
-## Deploying to Production
+would be flagged for being suspicious.
+## Run Locally
 
-To create a production build, call `mvnw clean package -Pproduction` (Windows),
-or `./mvnw clean package -Pproduction` (Mac & Linux).
-This will build a JAR file with all the dependencies and front-end resources,
-ready to be deployed. The file can be found in the `target` folder after the build completes.
+Clone the project
 
-Once the JAR file is built, you can run it using
-`java -jar target/my-app-1.0-SNAPSHOT.jar`
+```bash
+  git clone https://link-to-project
+```
 
+Go to the project directory
+
+```bash
+  cd my-project
+```
+
+Run
+
+`./mvnw` on Mac/Linux, `mvnw` on Windows
+
+IntelliJ should automatically generate a run configuration as well.
+
+**The frontend is hosted on port 8080.**
+## Build for Production
+
+Run `mvn clean package -Pproduction` to package the jar into the folder `targets/name-version.jar`. `-Pproduction` tells Maven to build the JAR in the production profile, and so it will keep the JAR from being bloated. Make sure to delete the target folder once you're done using the JAR, or running the server normally will be in production mode as well.
 ## Project structure
 
-- `MainLayout.java` in `src/main/java` contains the navigation setup (i.e., the
+- `MainLayout.java` in `src/main/java/com/github/williamli0707/views` contains the navigation setup (i.e., the
   side/top bar and the main menu). This setup uses
   [App Layout](https://vaadin.com/docs/components/app-layout).
-- `views` package in `src/main/java` contains the server-side Java views of your application.
-- `views` folder in `frontend/` contains the client-side JavaScript views of your application.
+- `views` package in `src/main/java/com/github/williamli0707` contains the server-side Java views of the application.
 - `themes` folder in `frontend/` contains the custom CSS styles.
+## Acknowledgements
 
-## Useful links
+- [Base Vaadin and intiial RunestoneAPI request methods](//https://github.com/caupcakes/runestone-submission-downloader)
 
-- Read the documentation at [vaadin.com/docs](https://vaadin.com/docs).
-- Follow the tutorial at [vaadin.com/docs/latest/tutorial/overview](https://vaadin.com/docs/latest/tutorial/overview).
-- Create new projects at [start.vaadin.com](https://start.vaadin.com/).
-- Search UI components and their usage examples at [vaadin.com/docs/latest/components](https://vaadin.com/docs/latest/components).
-- View use case applications that demonstrate Vaadin capabilities at [vaadin.com/examples-and-demos](https://vaadin.com/examples-and-demos).
-- Build any UI without custom CSS by discovering Vaadin's set of [CSS utility classes](https://vaadin.com/docs/styling/lumo/utility-classes). 
-- Find a collection of solutions to common use cases at [cookbook.vaadin.com](https://cookbook.vaadin.com/).
-- Find add-ons at [vaadin.com/directory](https://vaadin.com/directory).
-- Ask questions on [Stack Overflow](https://stackoverflow.com/questions/tagged/vaadin) or join our [Discord channel](https://discord.gg/MYFq5RTbBn).
-- Report issues, create pull requests in [GitHub](https://github.com/vaadin).
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
+

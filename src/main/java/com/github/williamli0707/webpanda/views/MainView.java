@@ -92,7 +92,7 @@ public class MainView extends VerticalLayout {
                 Callback callback1 = new AnalyzeCallback(status1), callback2 = new AnalyzeCallback(status2), callback3 = new AnalyzeCallback(status3);
                 HashMap<String, LinkedHashMap<String, ArrayList<Attempt>>> data = RunestoneAPI.getAllCodeMultiple(callback1, selectedProblems);
 
-                System.out.println("done getting data");
+//                System.out.println("done getting data");
 
                 getUI().ifPresent(ui -> {
                     if(ui.isAttached()) ui.access(() -> remove(status1Label, status1));
@@ -105,7 +105,7 @@ public class MainView extends VerticalLayout {
                     });
                     long time = System.currentTimeMillis();
 //                    minTimes = currApi.minTimeDiff(data, selectedProblems.size(), callback2);
-                    minTimes = RunestoneAPI.minTimeDiff2(data, record.getPids(), callback2); //TODO change back
+                    minTimes = RunestoneAPI.minTimeDiff(data, record.getPids(), callback2); //TODO change back
                     System.out.println("Done calculating min times - Execution time: " + (System.currentTimeMillis() - time) + "ms");
 
                     getUI().ifPresent(ui -> {
@@ -120,7 +120,7 @@ public class MainView extends VerticalLayout {
                 ArrayList<Diff> largeEdits = RunestoneAPI.findLargeEdits(data, selectedProblems.size(), callback3);
                 record.setLargeDiffs(largeEdits);
                 System.out.println("Done getting large edits - Execution time: " + (System.currentTimeMillis() - time) + "ms");
-                System.out.println(largeEdits);
+//                System.out.println(largeEdits);
 
                 getUI().ifPresent(ui -> {
                     if(ui.isAttached()) ui.access(() -> remove(status3Label, status3));
