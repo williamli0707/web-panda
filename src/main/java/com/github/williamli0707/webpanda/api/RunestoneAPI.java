@@ -47,6 +47,11 @@ public class RunestoneAPI {
     private static CustomCookieJar cookiejar;
 
     /**
+     * Stores the username and password for Runestone. These are taken from user on startup.
+     */
+    public static String user, password;
+
+    /**
      * Initializes the three OKHttpClients used for accessing Runestone. client and noRedirectClient are used
      * in the login process and need automatic cookie jars for the reasons described above.
      */
@@ -93,10 +98,6 @@ public class RunestoneAPI {
                                  pproblems = Pattern.compile("<script type=\"application/json\" id=\"getassignmentinfo\">([\\s\\S]*?)</script>"),
                                  paccess_token = Pattern.compile("access_token=(.*?);");
 
-
-    static {
-        reset();
-    }
 
     /**
      * Gets all the problems from Runestone. The problems come from
@@ -278,8 +279,8 @@ public class RunestoneAPI {
         String formkey = match.group(1);
 
         RequestBody body = new FormBody.Builder()
-                .addEncoded("username", "wli223")
-                .addEncoded("password", "***REMOVED***")
+                .addEncoded("username", user)
+                .addEncoded("password", password)
                 .addEncoded("_next", "/runestone/admin")
                 .addEncoded("_formkey", formkey)
                 .addEncoded("_formname", "login")
@@ -323,35 +324,7 @@ public class RunestoneAPI {
                 "RS_info=\"{\\\"tz_offset\\\": 8.0}\"";
         response.close();
 
-        MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
-        JSONObject jbody = new JSONObject().put("acid", "lhs_6_1").put("sid", "lhs_5230007");
-        RequestBody reqbody = RequestBody.create(jbody.toString(), mediaType);
-
-        Request request = new Request.Builder()
-                .url("https://runestone.academy/ns/assessment/gethist")
-                .post(reqbody)
-                .addHeader("Accept", "application/json")
-                //ignore accept-encoding
-                .addHeader("Accept-Language", "en-US,en;q=0.9")
-                .addHeader("Connection", "keep-alive")
-                .addHeader("Content-Type", "application/json; charset=utf-8")
-                .addHeader("Cookie", "_gcl_au=1.1.1332442316.1694036375; __utmc=28105279; session_id_admin=205.173.47.254-12e99be8-596a-48ec-b212-f66d61c5ebdd; __utmz=28105279.1699043992.22.15.utmcsr=landing.runestone.academy|utmccn=(referral)|utmcmd=referral|utmcct=/; session_id_runestone=52245321:fe40ec64-0315-4bcf-9d1a-8793213d7c94; access_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ3bGkyMjMiLCJleHAiOjE3MDg4OTEyNTZ9.6_yRcDx1sbo48xHi5EQqwFzP3TWZeKOnj6IR-COfXgw; __utma=28105279.603586017.1694036376.1699766648.1699819267.25; RS_info=\"{\\\"readings\\\": []\\054 \\\"tz_offset\\\": 8.0}\"; __utmt=1; __utmb=28105279.3.10.1699819267")
-                .addHeader("Host", "runestone.academy")
-                .addHeader("Origin", "https://runestone.academy")
-                .addHeader("Referer", "https://runestone.academy/runestone/admin/grading")
-                .addHeader("Sec-Ch-Ua", "\"Google Chrome\";v=\"119\", \"Chromium\";v=\"119\", \"Not?A_Brand\";v=\"24\"")
-                .addHeader("Sec-Ch-Ua-Mobile", "?0")
-                .addHeader("Sec-Ch-Ua-Platform", "\"macOS\"")
-                .addHeader("Sec-Fetch-Dest", "empty")
-                .addHeader("Sec-Fetch-Mode", "cors")
-                .addHeader("Sec-Fetch-Site", "same-origin")
-                .addHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36")
-                .addHeader("accept", "application/json")
-                .build();
-
-        Response resp = client.newCall(request).execute();
-
-        System.out.println(resp.body().string());
+        System.out.println("Logged in successfully");
     }
 
     /**
