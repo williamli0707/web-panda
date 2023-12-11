@@ -2,7 +2,7 @@ package com.github.williamli0707.webpanda;
 
 import com.github.williamli0707.webpanda.api.RunestoneAPI;
 import com.github.williamli0707.webpanda.db.ItemRepository;
-import com.github.williamli0707.webpanda.db.MongoManager;
+import com.github.williamli0707.webpanda.db.MongoDBManager;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
@@ -68,11 +68,10 @@ public class WebPandaApplication implements CommandLineRunner, AppShellConfigura
 				}
 			}
 		}).start();
-		//TODO scans might be broken during resetting, fix this later
 
 		version = tmp;
 //		codescanRepo.deleteAll();
-		MongoManager.repository = codescanRepo;
+		MongoDBManager.repository = codescanRepo;
 		RunestoneAPI.timeDiffSensitivity = preferences.getInt("timeDiffSensitivity", 50);
 		RunestoneAPI.largeEditSensitivity = preferences.getInt("largeEditSensitivity", 50);
 	}

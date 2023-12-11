@@ -580,7 +580,7 @@ public class RunestoneAPI {
                             for(int b = 1;b < times[j].length;b++) {
                                 if(times[i][a].timestamp() > times[j][b].timestamp()) {
                                     int distance = LevenshteinDistance.getDistance(times[i][a - 1].code(), times[i][a].code());
-                                    if (distance * 1.0 / times[i][a - 1].code().length() < 1 - timeDiffSensitivity / 100.0) continue; //TODO tune
+                                    if (distance * 1.0 / times[i][a - 1].code().length() < 1 - timeDiffSensitivity / 100.0) continue;
                                     double curr = Math.abs(times[i][a].timestamp() - times[j][b].timestamp()) / 1000.0;
                                     if(curr > 2000 * timeDiffSensitivity / 100.0) continue; //tunable from 0-2000 seconds
 
@@ -647,7 +647,7 @@ public class RunestoneAPI {
                 if(!diffs.containsKey(pid)) diffs.put(pid, new ArrayList<>());
                 ArrayList<Attempt> attempts = data.get(sid).get(pid);
                 for(int i = 1;i < attempts.size();i++) {
-                    if(LevenshteinDistance.getDistance(attempts.get(i - 1).code(), attempts.get(i).code()) * 1.0f / attempts.get(i - 1).code().length() < 0.3) continue; //TODO tunable
+                    if(LevenshteinDistance.getDistance(attempts.get(i - 1).code(), attempts.get(i).code()) * 1.0f / attempts.get(i - 1).code().length() < 0.3) continue;
                     diffs.get(pid).add(new Diff(sid, pid, i + 2, LevenshteinDistance.getDistance(attempts.get(i - 1).code(), attempts.get(i).code())));
                 }
             }
