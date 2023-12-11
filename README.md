@@ -58,7 +58,7 @@ java.lang.IllegalArgumentException: Invalid character found in method name [0x16
         at java.base/java.lang.Thread.run(Thread.java:833) ~[na:na]
 ```
 
-[This issue has been documented](https://stackoverflow.com/questions/42218237/tomcat-java-lang-illegalargumentexception-invalid-character-found-in-method-na) and it is due to clients sending HTTPS requests when the server expects HTTP requests, although I'm not sure how to fix it.
+[This issue has been documented](https://stackoverflow.com/questions/42218237/tomcat-java-lang-illegalargumentexception-invalid-character-found-in-method-na) and it is due to clients sending HTTPS requests when the server expects HTTP requests. It is fixable by using HTTP to connect to the server instead of HTTPS. 
 ## Acknowledgements
 
 - [Base Vaadin and intiial RunestoneAPI request methods](//https://github.com/caupcakes/runestone-submission-downloader)
