@@ -2,7 +2,7 @@ package com.github.williamli0707.webpanda.views;
 
 import com.github.williamli0707.webpanda.api.RunestoneAPI;
 import com.github.williamli0707.webpanda.db.CodescanRecord;
-import com.github.williamli0707.webpanda.db.MongoManager;
+import com.github.williamli0707.webpanda.db.MongoDBManager;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.accordion.AccordionPanel;
 import com.vaadin.flow.component.html.NativeLabel;
@@ -24,7 +24,7 @@ public class HistoryView extends VerticalLayout {
         setHeight("100%");
         setWidth("100%");
 //        System.out.println(MongoManager.repository.count());
-        List<CodescanRecord> res = MongoManager.repository.findAll();
+        List<CodescanRecord> res = MongoDBManager.repository.findAll();
         Collections.sort(res);
         Accordion accordion = new Accordion();
         accordion.setHeight("100%");;

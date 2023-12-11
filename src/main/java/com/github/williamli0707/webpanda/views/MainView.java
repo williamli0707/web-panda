@@ -3,7 +3,7 @@ package com.github.williamli0707.webpanda.views;
 import com.github.williamli0707.webpanda.api.Callback;
 import com.github.williamli0707.webpanda.api.RunestoneAPI;
 import com.github.williamli0707.webpanda.db.CodescanRecord;
-import com.github.williamli0707.webpanda.db.MongoManager;
+import com.github.williamli0707.webpanda.db.MongoDBManager;
 import com.github.williamli0707.webpanda.records.Attempt;
 import com.github.williamli0707.webpanda.records.Diff;
 import com.github.williamli0707.webpanda.records.DiffBetweenProblems;
@@ -105,7 +105,7 @@ public class MainView extends VerticalLayout {
                     });
                     long time = System.currentTimeMillis();
 //                    minTimes = currApi.minTimeDiff(data, selectedProblems.size(), callback2);
-                    minTimes = RunestoneAPI.minTimeDiff(data, record.getPids(), callback2); //TODO change back
+                    minTimes = RunestoneAPI.minTimeDiff(data, record.getPids(), callback2);
                     System.out.println("Done calculating min times - Execution time: " + (System.currentTimeMillis() - time) + "ms");
 
                     getUI().ifPresent(ui -> {
@@ -133,7 +133,7 @@ public class MainView extends VerticalLayout {
                         add(results);
                     });
                 });
-                MongoManager.save(record);
+                MongoDBManager.save(record);
             }).start();
         });
 
@@ -144,6 +144,9 @@ public class MainView extends VerticalLayout {
         setHeight("100%");
     }
 
+    /**
+     * Callback for updating a label, used while analyzing
+     */
     class AnalyzeCallback implements Callback {
         NativeLabel label;
         public AnalyzeCallback (NativeLabel label) {
