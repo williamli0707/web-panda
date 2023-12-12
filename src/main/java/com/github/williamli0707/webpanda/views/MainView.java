@@ -15,10 +15,12 @@ import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import jakarta.annotation.security.PermitAll;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@PermitAll
 @Route(value="analyze", layout = MainLayout.class)
 @RouteAlias(value="", layout = MainLayout.class)
 public class MainView extends VerticalLayout {
