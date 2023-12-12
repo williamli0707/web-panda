@@ -44,6 +44,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.vaadin.addons.componentfactory</groupId>
             <artifactId>lumo-paper-slider</artifactId>
             <version>1.0.1</version>

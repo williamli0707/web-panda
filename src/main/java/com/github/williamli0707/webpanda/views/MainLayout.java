@@ -1,10 +1,14 @@
 package com.github.williamli0707.webpanda.views;
 
 import com.github.williamli0707.webpanda.WebPandaApplication;
+import com.github.williamli0707.webpanda.security.SecurityService;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
@@ -13,23 +17,36 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 
 @Uses(MainView.class)
 public class MainLayout extends AppLayout {
-
+    private final SecurityService securityService;
     private H2 viewTitle;
 
-    public MainLayout() {
+    public MainLayout(SecurityService securityService) {
+        this.securityService = securityService;
         setPrimarySection(Section.DRAWER);
         addDrawerContent();
         addHeaderContent();
     }
 
     private void addHeaderContent() {
+
         DrawerToggle toggle = new DrawerToggle();
         toggle.setAriaLabel("Menu toggle");
 
         viewTitle = new H2();
         viewTitle.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
 
-        addToNavbar(true, toggle, viewTitle);
+        String u = securityService.getAuthenticatedUser().getUsername();
+        Button logout = new Button("Log out", e -> securityService.logout());
+
+        HorizontalLayout header = new HorizontalLayout(toggle, viewTitle, logout);
+        header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        header.expand(viewTitle);
+        header.setWidthFull();
+        header.addClassNames(
+                LumoUtility.Padding.Vertical.NONE,
+                LumoUtility.Padding.Horizontal.MEDIUM);
+
+        addToNavbar(true, header);
     }
 
     private void addDrawerContent() {
