@@ -35,13 +35,13 @@ public class SecurityConfig extends VaadinWebSecurity {
                 .username("user")
                 // password = password with this hash, don't tell anybody :-)
                 .password("{bcrypt}" + BCrypt.hashpw(WebPandaApplication.passcode, BCrypt.gensalt()))
-                .roles("USER")
-                .build();
-        UserDetails admin = User.builder()
-                .username("admin")
-                .password("{bcrypt}$2y$10$eA2Ab8iWcOvDMqxNWnZf..SV1aQMXiOUqiq3uhvxTdic1eRsJVsxi")
                 .roles("USER", "ADMIN")
                 .build();
-        return new InMemoryUserDetailsManager(user, admin);
+//        UserDetails admin = User.builder()
+//                .username("admin")
+//                .password("{bcrypt}$2y$10$eA2Ab8iWcOvDMqxNWnZf..SV1aQMXiOUqiq3uhvxTdic1eRsJVsxi")
+//                .roles("USER", "ADMIN")
+//                .build();
+        return new InMemoryUserDetailsManager(user);
     }
 }
