@@ -21,3 +21,4 @@ error-screenshots/
 webpack.generated.js
 !/src/main/resources/application.properties
 Config.txt
+!/Config.txt
