@@ -1,5 +1,6 @@
 package com.github.williamli0707.webpanda.views;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -24,9 +25,14 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         login.setForgotPasswordButtonVisible(false);
 
         login.setAction("login");
-
-
         add(new H1("Web-PANDA login"), login);
+
+        UI.getCurrent().getElement().executeJs(
+                "document.getElementById('vaadinLoginUsername').style.display = 'none';" +
+//                        "document.getElementById('vaadinLoginUsername').style.height = '0';" +
+                        "document.getElementById('input-vaadin-text-field-6').value = 'user';"
+        );
+
     }
 
     @Override
