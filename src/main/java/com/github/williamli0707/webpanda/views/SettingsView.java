@@ -80,6 +80,36 @@ public class SettingsView extends VerticalLayout {
         PasswordField websitePassField = new PasswordField("Website Passcode (default is \"password\")");
         websitePassField.setValue(WebPandaApplication.passcode);
 
+        Button save = new Button("Save Username, Password, and Website Passcode");
+        NativeLabel errorText = new NativeLabel("");
+        errorText.getStyle().setColor("red");
+        save.addClickListener(e -> {
+            String utemp = userField.getValue();
+            String ptemp = passField.getValue();
+            String wptemp = websitePassField.getValue();
+
+            WebPandaApplication.preferences.put("user", userField.getValue());
+            WebPandaApplication.preferences.put("password", passField.getValue());
+            WebPandaApplication.preferences.put("passcode", websitePassField.getValue());
+            RunestoneAPI.user = userField.getValue();
+            RunestoneAPI.password = passField.getValue();
+            try {
+                RunestoneAPI.reset();
+                errorText.setText("");
+            } catch (Exception error) {
+                errorText.setText("Invalid credentials, reverted to previous settings.");
+                WebPandaApplication.preferences.put("user", utemp);
+                WebPandaApplication.preferences.put("password", ptemp);
+                WebPandaApplication.preferences.put("passcode", wptemp);
+                RunestoneAPI.user = utemp;
+                RunestoneAPI.password = ptemp;
+
+                userField.setValue(utemp);
+                passField.setValue(ptemp);
+                websitePassField.setValue(wptemp);
+            }
+        });
+
         add(timeDiffSettings, timeDiffSensitivity, timeDiffSensitivitySlider,
                 new Hr(),
                 largeEditSettings, largeEditSensitivity, largeEditSensitivitySlider,
