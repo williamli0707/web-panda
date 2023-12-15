@@ -14,7 +14,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
 import java.util.prefs.Preferences;
@@ -43,20 +42,7 @@ public class WebPandaApplication implements CommandLineRunner, AppShellConfigura
 	public static Preferences preferences = Preferences.userNodeForPackage(WebPandaApplication.class);
 
 	public static void main(String[] args) throws IOException {
-		String user, password;
 
-		File f = new File("config.txt");
-		if((user = preferences.get("user", null)) == null || (password = preferences.get("password", null)) == null) {
-			Scanner in = new Scanner(System.in);
-			System.out.println("Enter Runestone username: ");
-			user = in.nextLine();
-			System.out.println("Enter Runestone password: ");
-			password = in.nextLine();
-			in.close();
-
-			preferences.put("user", user);
-			preferences.put("password", password);
-		}
 //		if (f.exists() && !f.isDirectory()) {
 //			Scanner in = new Scanner(f);
 //			user = in.nextLine();
@@ -76,8 +62,7 @@ public class WebPandaApplication implements CommandLineRunner, AppShellConfigura
 //			in.close();
 //		}
 
-		RunestoneAPI.user = user;
-		RunestoneAPI.password = password;
+		setCredentials(3);
 
 		passcode = preferences.get("passcode", "password");
 
@@ -88,6 +73,39 @@ public class WebPandaApplication implements CommandLineRunner, AppShellConfigura
 		RunestoneAPI.largeEditSensitivity = preferences.getInt("largeEditSensitivity", 50);
 
 		SpringApplication.run(WebPandaApplication.class, args);
+	}
+
+	public static void setCredentials(int tries) {
+		if(tries <= 0) {
+			System.exit(0);
+			return;
+		}
+
+		String user, password;
+
+		if((user = preferences.get("user", null)) == null || (password = preferences.get("password", null)) == null) {
+			Scanner in = new Scanner(System.in);
+			System.out.println("Enter Runestone username: ");
+			user = in.nextLine();
+			System.out.println("Enter Runestone password: ");
+			password = in.nextLine();
+			in.close();
+		}
+
+		try {
+			RunestoneAPI.user = user;
+			RunestoneAPI.password = password;
+
+			RunestoneAPI.reset();
+
+			preferences.put("user", RunestoneAPI.user);
+			preferences.put("password", RunestoneAPI.password);
+		} catch (Exception e) {
+			System.err.println("Invalid credentials");
+			preferences.remove("user");
+			preferences.remove("password");
+			setCredentials(tries - 1);
+		}
 	}
 
 	public void run(String... args) throws IOException {
