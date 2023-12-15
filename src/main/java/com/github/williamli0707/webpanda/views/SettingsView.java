@@ -6,10 +6,14 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.PasswordField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import org.vaadin.addons.componentfactory.PaperSlider;
+
+//import java.awt.*;
 
 @PermitAll
 @PageTitle("Settings Viewer")
@@ -68,10 +72,21 @@ public class SettingsView extends VerticalLayout {
             largeEditSensitivity.setText("Sensitivity: " + RunestoneAPI.largeEditSensitivity + "%");
         });
 
+        TextField userField = new TextField("Runestone Username");
+        userField.setValue((WebPandaApplication.preferences.get("user", "")));
+        PasswordField passField = new PasswordField("Runestone Password");
+        passField.setValue(WebPandaApplication.preferences.get("password", ""));
+
+        PasswordField websitePassField = new PasswordField("Website Passcode (default is \"password\")");
+        websitePassField.setValue(WebPandaApplication.passcode);
+
         add(timeDiffSettings, timeDiffSensitivity, timeDiffSensitivitySlider,
                 new Hr(),
                 largeEditSettings, largeEditSensitivity, largeEditSensitivitySlider,
                 new Hr(),
-                resetButton, resetLabel, resetSettings);
+                resetButton, resetLabel, resetSettings,
+                new Hr(),
+                userField, passField, websitePassField
+        );
     }
 }

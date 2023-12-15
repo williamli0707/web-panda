@@ -46,29 +46,46 @@ public class WebPandaApplication implements CommandLineRunner, AppShellConfigura
 		String user, password;
 
 		File f = new File("config.txt");
-		if (f.exists() && !f.isDirectory()) {
-			Scanner in = new Scanner(f);
-			user = in.nextLine();
-			password = in.nextLine();
-			passcode = in.nextLine();
-			in.close();
-		} else {
+		if((user = preferences.get("user", null)) == null || (password = preferences.get("password", null)) == null) {
 			Scanner in = new Scanner(System.in);
 			System.out.println("Enter Runestone username: ");
 			user = in.nextLine();
 			System.out.println("Enter Runestone password: ");
 			password = in.nextLine();
-
-			System.out.println("Enter a passcode for the website: ");
-			passcode = in.nextLine();
-
 			in.close();
+
+			preferences.put("user", user);
+			preferences.put("password", password);
 		}
+//		if (f.exists() && !f.isDirectory()) {
+//			Scanner in = new Scanner(f);
+//			user = in.nextLine();
+//			password = in.nextLine();
+//			passcode = in.nextLine();
+//			in.close();
+//		} else {
+//			Scanner in = new Scanner(System.in);
+//			System.out.println("Enter Runestone username: ");
+//			user = in.nextLine();
+//			System.out.println("Enter Runestone password: ");
+//			password = in.nextLine();
+//
+//			System.out.println("Enter a passcode for the website: ");
+//			passcode = in.nextLine();
+//
+//			in.close();
+//		}
 
 		RunestoneAPI.user = user;
 		RunestoneAPI.password = password;
 
+		passcode = preferences.get("passcode", "password");
+
+		System.out.println("calling reset");
 		RunestoneAPI.reset();
+
+		RunestoneAPI.timeDiffSensitivity = preferences.getInt("timeDiffSensitivity", 50);
+		RunestoneAPI.largeEditSensitivity = preferences.getInt("largeEditSensitivity", 50);
 
 		SpringApplication.run(WebPandaApplication.class, args);
 	}
@@ -91,8 +108,6 @@ public class WebPandaApplication implements CommandLineRunner, AppShellConfigura
 		version = tmp;
 //		codescanRepo.deleteAll();
 		MongoDBManager.repository = codescanRepo;
-		RunestoneAPI.timeDiffSensitivity = preferences.getInt("timeDiffSensitivity", 50);
-		RunestoneAPI.largeEditSensitivity = preferences.getInt("largeEditSensitivity", 50);
 	}
 
 }
