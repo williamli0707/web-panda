@@ -116,7 +116,7 @@ public class SettingsView extends VerticalLayout {
                 new Hr(),
                 resetButton, resetLabel, resetSettings,
                 new Hr(),
-                userField, passField, websitePassField
+                userField, passField, websitePassField, save, errorText
         );
     }
 }

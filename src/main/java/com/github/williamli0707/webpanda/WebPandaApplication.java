@@ -66,7 +66,7 @@ public class WebPandaApplication implements CommandLineRunner, AppShellConfigura
 
 		passcode = preferences.get("passcode", "password");
 
-		System.out.println("calling reset");
+//		System.out.println("calling reset");
 		RunestoneAPI.reset();
 
 		RunestoneAPI.timeDiffSensitivity = preferences.getInt("timeDiffSensitivity", 50);
