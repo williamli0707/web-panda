@@ -91,16 +91,22 @@ public class SettingsView extends VerticalLayout {
             WebPandaApplication.preferences.put("user", userField.getValue());
             WebPandaApplication.preferences.put("password", passField.getValue());
             WebPandaApplication.preferences.put("passcode", websitePassField.getValue());
+
+            WebPandaApplication.passcode = websitePassField.getValue();
+
             RunestoneAPI.user = userField.getValue();
             RunestoneAPI.password = passField.getValue();
             try {
                 RunestoneAPI.reset();
-                errorText.setText("");
+                errorText.setText("Saved. If the website passcode was changed, the server will need to be restarted. ");
             } catch (Exception error) {
                 errorText.setText("Invalid credentials, reverted to previous settings.");
                 WebPandaApplication.preferences.put("user", utemp);
                 WebPandaApplication.preferences.put("password", ptemp);
                 WebPandaApplication.preferences.put("passcode", wptemp);
+
+                WebPandaApplication.passcode = wptemp;
+
                 RunestoneAPI.user = utemp;
                 RunestoneAPI.password = ptemp;
 
