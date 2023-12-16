@@ -17,14 +17,16 @@ would be flagged for being suspicious.
 Clone the project
 
 ```bash
-  git clone https://link-to-project
+  git clone git@github.com:williamli0707/web-panda.git
 ```
 
 Go to the project directory
 
 ```bash
-  cd my-project
+  cd web-panda
 ```
+
+**Change the MongoDB URI in src/main/resources/application.properties. Change the cluster name as needed.**
 
 Run
 
@@ -34,6 +36,8 @@ IntelliJ should automatically generate a run configuration as well.
 
 **The frontend is hosted on port 8080.**
 ## Build for Production
+
+**Change the MongoDB URI in src/main/resources/application.properties. Change the cluster name as needed.**
 
 Run `mvn clean package -Pproduction` to package the jar into the folder `targets/name-version.jar`. `-Pproduction` tells Maven to build the JAR in the production profile, and so it will keep the JAR from being bloated. Make sure to delete the target folder once you're done using the JAR, or running the server normally will be in production mode as well.
 ## Project structure
