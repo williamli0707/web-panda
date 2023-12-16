@@ -9,9 +9,15 @@ When analyzing a problem it will take into account large edits and small time di
 - Submission 3 for Problem A having 500 characters changed from Submission 2 of the same problem, when most other submissions by students for this problem have changes of around 30 characters.
 - Submission 4 of Problem B at 4:15 PM having 200 characters changed from the previous submission, where the student submitted code for Submission 3 of Problem A one minute earlier, at 4:14 PM. This probably means that they changed 200 characters in possibly less than a minute, which is usually cause for suspicion.
 
+would be flagged for being suspicious.
+
 The application will prompt a Runestone username and password. This is used to access Runestone data and can be changed later. The default website password is "password". 
 
-would be flagged for being suspicious.
+The website passcode can be found if forgotten. Go to the folder where the Java Preferences API stores its keys: 
+- `~/Library/Preferences/com.github.williamli0707.plist` on MacOS
+- `~/.java/.userPrefs/com/github/williamli0707/webpanda/prefs.xml` on Linux
+- ??? on Windows (probably in the appData folder)
+
 ## Run Locally
 
 Clone the project
