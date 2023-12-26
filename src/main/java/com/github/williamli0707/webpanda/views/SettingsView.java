@@ -19,6 +19,7 @@ import org.vaadin.addons.componentfactory.PaperSlider;
 @PageTitle("Settings Viewer")
 @Route(value = "settings", layout = MainLayout.class)
 
+
 //@PreserveOnRefresh
 public class SettingsView extends VerticalLayout {
     public SettingsView() {
