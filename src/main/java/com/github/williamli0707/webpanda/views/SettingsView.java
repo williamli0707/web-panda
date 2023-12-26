@@ -13,6 +13,7 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import org.vaadin.addons.componentfactory.PaperSlider;
 
+
 //import java.awt.*;
 
 @PermitAll
