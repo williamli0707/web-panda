@@ -105,6 +105,7 @@ public class RunestoneAPI {
     private final static Hashtable<String, String> studentnamescache = new Hashtable<>();
     private final static Hashtable<String, String[]> problemnamescache = new Hashtable<>();
     private final static Hashtable<String, String> defaultcodetemplatecache = new Hashtable<>();
+    // Use this cookie for all requests involving client2
     private static String cookie, access_token, session_id;
     private static final String loginURL = "https://runestone.academy/user/login?_next=/runestone/admin";
     private static final String gradeURL = "https://runestone.academy/ns/assessment/gethist";
@@ -341,7 +342,7 @@ public class RunestoneAPI {
                 "RS_info=\"{\\\"tz_offset\\\": 8.0}\"";
         response.close();
 
-        System.out.println("Logged in successfully");
+        System.out.println("Refreshed login successfully - " + new Date().getTime());
     }
 
     /**
@@ -409,7 +410,7 @@ public class RunestoneAPI {
                 .addHeader("Accept-Language", "en-US,en;q=0.9")
                 .addHeader("Connection", "keep-alive")
                 .addHeader("Content-Type", "application/json; charset=utf-8")
-                .addHeader("Cookie", "_gcl_au=1.1.1332442316.1694036375; __utmc=28105279; session_id_admin=205.173.47.254-12e99be8-596a-48ec-b212-f66d61c5ebdd; __utmz=28105279.1699043992.22.15.utmcsr=landing.runestone.academy|utmccn=(referral)|utmcmd=referral|utmcct=/; session_id_runestone=52245321:fe40ec64-0315-4bcf-9d1a-8793213d7c94; access_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ3bGkyMjMiLCJleHAiOjE3MDg4OTEyNTZ9.6_yRcDx1sbo48xHi5EQqwFzP3TWZeKOnj6IR-COfXgw; __utma=28105279.603586017.1694036376.1699766648.1699819267.25; RS_info=\"{\\\"readings\\\": []\\054 \\\"tz_offset\\\": 8.0}\"; __utmt=1; __utmb=28105279.3.10.1699819267")
+                .addHeader("Cookie", cookie)
                 .addHeader("Host", "runestone.academy")
                 .addHeader("Origin", "https://runestone.academy")
                 .addHeader("Referer", "https://runestone.academy/runestone/admin/grading")
