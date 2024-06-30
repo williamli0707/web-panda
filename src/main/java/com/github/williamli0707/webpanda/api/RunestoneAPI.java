@@ -105,6 +105,7 @@ public class RunestoneAPI {
     private final static Hashtable<String, String> studentnamescache = new Hashtable<>();
     private final static Hashtable<String, String[]> problemnamescache = new Hashtable<>();
     private final static Hashtable<String, String> defaultcodetemplatecache = new Hashtable<>();
+    // Use this cookie for all requests involving client2
     private static String cookie, access_token, session_id;
     private static final String loginURL = "https://runestone.academy/user/login?_next=/runestone/admin";
     private static final String gradeURL = "https://runestone.academy/ns/assessment/gethist";
@@ -425,7 +426,6 @@ public class RunestoneAPI {
 
         String resp = (String) request(request);
 
-        System.out.println(resp);
         JSONObject respjson = new JSONObject(resp).getJSONObject("detail");
         JSONArray history = respjson.getJSONArray("history");
         JSONArray timestamps = respjson.getJSONArray("timestamps");
