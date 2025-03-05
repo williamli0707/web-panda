@@ -95,7 +95,9 @@ public class RunestoneAPI {
             resetCookie();
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
+        System.out.println("Cookie was reset. This can happen multiple times.");
         initNameCache();
         initProblemCache();
 
@@ -251,12 +253,12 @@ public class RunestoneAPI {
      */
     private static void resetCookie() throws IOException {
         Response response = noRedirectClient.newCall(new Request.Builder()
-                .url(new URL("https://runestone.academy/"))
+                .url(new URL("https://runestone.academy"))
                 .get()
                 .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
                 .addHeader("Accept-Language", "en-US,en;q=0.5")
                 .addHeader("Connection", "keep-alive")
-                .addHeader("Host", "runestone.academy")
+//                .addHeader("Host", "runestone.academy")
                 .addHeader("Sec-Fetch-Dest", "document")
                 .addHeader("Sec-Fetch-Mode", "navigate")
                 .addHeader("Sec-Fetch-Site", "none")
@@ -265,10 +267,10 @@ public class RunestoneAPI {
                 .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0")
                 .build()
         ).execute();
-
-        Matcher match = psessionid.matcher(Objects.requireNonNull(response.header("Set-Cookie")));
+        Matcher match = psessionid.matcher(response.headers("Set-Cookie").toString());
         if(!match.find()) throw new IOException("Could not find session id");
         String sessionID = match.group(1);
+        System.out.println("sessionID: " + sessionID);
         response.close(); //closed
 
         cookie = "session_id_runestone=" + sessionID + "; " +
@@ -332,7 +334,7 @@ public class RunestoneAPI {
         response = noRedirectClient.newCall(new Request.Builder()
                 .url("https://runestone.academy/")
                 .get().build()).execute();
-        match = paccess_token.matcher(Objects.requireNonNull(response.header("Set-Cookie")));
+        match = paccess_token.matcher(response.headers("Set-Cookie").toString());
         if(!match.find()) throw new IOException("Could not find access token");
 //        System.out.println(response.body().string());
         cookie = "session_id_runestone=" + sessionID + "; " +

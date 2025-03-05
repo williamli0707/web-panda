@@ -38,35 +38,16 @@ public class WebPandaApplication implements CommandLineRunner, AppShellConfigura
 	private String tmp;
 	public static String version;
 	public static String passcode;
+	public static Scanner in;
 
 	public static Preferences preferences = Preferences.userNodeForPackage(WebPandaApplication.class);
 
 	public static void main(String[] args) throws IOException {
-
-//		if (f.exists() && !f.isDirectory()) {
-//			Scanner in = new Scanner(f);
-//			user = in.nextLine();
-//			password = in.nextLine();
-//			passcode = in.nextLine();
-//			in.close();
-//		} else {
-//			Scanner in = new Scanner(System.in);
-//			System.out.println("Enter Runestone username: ");
-//			user = in.nextLine();
-//			System.out.println("Enter Runestone password: ");
-//			password = in.nextLine();
-//
-//			System.out.println("Enter a passcode for the website: ");
-//			passcode = in.nextLine();
-//
-//			in.close();
-//		}
-
+		in = new Scanner(System.in);
 		setCredentials(3);
 
 		passcode = preferences.get("passcode", "password");
 
-//		System.out.println("calling reset");
 		RunestoneAPI.reset();
 
 		RunestoneAPI.timeDiffSensitivity = preferences.getInt("timeDiffSensitivity", 50);
@@ -89,7 +70,6 @@ public class WebPandaApplication implements CommandLineRunner, AppShellConfigura
 			user = in.nextLine();
 			System.out.println("Enter Runestone password: ");
 			password = in.nextLine();
-			in.close();
 		}
 
 		try {
@@ -124,7 +104,6 @@ public class WebPandaApplication implements CommandLineRunner, AppShellConfigura
 		}).start();
 
 		version = tmp;
-//		codescanRepo.deleteAll();
 		MongoDBManager.repository = codescanRepo;
 	}
 
