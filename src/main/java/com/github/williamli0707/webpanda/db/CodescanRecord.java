@@ -81,7 +81,7 @@ public class CodescanRecord implements Comparable<CodescanRecord> {
     //reversed so that the newest ones are first
     @Override
     public int compareTo(CodescanRecord o) {
-        return (int) (Long.parseLong(o.id) - Long.parseLong(id));
+        return Long.compare(Long.parseLong(o.id), Long.parseLong(id));
     }
 
     public long getTime() {

@@ -62,7 +62,7 @@ public class CodeView extends TabSheet {
 
         edits.setItemDetailsRenderer(new ComponentRenderer<ProblemViewer, Diff>(ProblemViewer::new, (viewer, diff) -> {
 //            viewer.setCode(record.getData().get(diff.sid()).get(diff.pid()), diff.num() - 2);
-
+//            System.out.println(RunestoneAPI.requestHistory(diff.sid(), diff.pid()));
             viewer.setCode(RunestoneAPI.requestHistory(diff.sid(), diff.pid()), diff.num() - 2);
         }));
 

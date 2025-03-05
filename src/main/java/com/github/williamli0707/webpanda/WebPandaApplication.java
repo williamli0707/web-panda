@@ -81,7 +81,7 @@ public class WebPandaApplication implements CommandLineRunner, AppShellConfigura
 			preferences.put("user", RunestoneAPI.user);
 			preferences.put("password", RunestoneAPI.password);
 		} catch (Exception e) {
-			System.err.println("Invalid credentials");
+			System.err.println("Invalid credentials or error logging in");
 			preferences.remove("user");
 			preferences.remove("password");
 			setCredentials(tries - 1);
